@@ -5,6 +5,7 @@ import 'package:elder_care/screens/admin/MenuDashboard.dart';
 import 'package:elder_care/screens/customer/contact.dart';
 import 'package:elder_care/screens/customer/homepage.dart';
 import 'package:elder_care/screens/customer/meal_plan.dart';
+import 'package:elder_care/screens/customer/view_metrics.dart';
 import 'package:elder_care/screens/login_page.dart';
 import 'package:elder_care/screens/merchant/serviceprovidehome.dart';
 import 'package:elder_care/screens/signup_page.dart';
@@ -38,6 +39,9 @@ class MyApp extends StatelessWidget {
         '/menu': (context) => MenuDashboard(),
         //'/signup': (context) => SignupPage(),
         '/meal': (context) => DietaryConsultation(),
+        '/metrics': (context) => ViewMetricsScreen(
+              userId: '1',
+            ),
       },
     );
   }

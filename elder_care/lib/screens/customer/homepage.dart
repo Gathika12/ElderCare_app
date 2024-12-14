@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:elder_care/screens/customer/meal_plan.dart';
 import 'package:elder_care/screens/customer/nearest_doctors.dart';
 import 'package:elder_care/screens/customer/special_events.dart';
+import 'package:elder_care/screens/customer/view_metrics.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -218,6 +220,7 @@ class _UserDashboardState extends State<UserDashboard>
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Add Fade Transition on Image Carousel
               AnimatedOpacity(
@@ -265,24 +268,28 @@ class _UserDashboardState extends State<UserDashboard>
 
               SizedBox(height: 20),
 
-              //package offer section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              // Package Offer Section
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   SizedBox(height: 20),
-                  // Package Offer Section
                   if (package == 0)
                     Text(
                       'Buy A Package For an Amazing Offer',
+                      textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 18, color: Colors.red),
                     )
                   else
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    Wrap(
+                      spacing: 20.0, // Horizontal space between icons
+                      runSpacing: 20.0, // Vertical space if wrapping is needed
+                      alignment: WrapAlignment
+                          .center, // Center-align icons horizontally
                       children: _getPackageIcons(),
                     ),
                 ],
               ),
+
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
@@ -431,46 +438,35 @@ class _UserDashboardState extends State<UserDashboard>
   List<Widget> _getPackageIcons() {
     List<Widget> icons = [];
 
-    if (package >= 3) {
+    // Add icons based on the package value
+    if (package >= 1) {
       icons.add(_buildIconColumn(
-          Icons.favorite, "Health", Colors.blue[100]!, _onHealthTap));
+          Icons.medication, "Checkup", Colors.green[100]!, _onCheckupTap));
     }
     if (package >= 2) {
-      icons.add(_buildIconColumn(Icons.check_circle_outline, "Check up",
-          Colors.pink[100]!, _onCheckUpTap));
+      icons.add(_buildIconColumn(
+          Icons.lunch_dining, "Dietary", Colors.pink[100]!, _onDietaryTap));
     }
-    if (package >= 1) {
-      icons.add(_buildIconColumn(Icons.medication, "Medication",
-          Colors.green[100]!, _onMedicationTap));
-    }
-
-    // Add a small gap between icons
-    List<Widget> spacedIcons = [];
-    for (int i = 0; i < icons.length; i++) {
-      spacedIcons.add(icons[i]);
-      if (i < icons.length - 1) {
-        spacedIcons.add(SizedBox(width: 10)); // Adjust the gap width here
-      }
+    if (package == 3) {
+      icons.add(_buildIconColumn(
+          Icons.favorite, "Events", Colors.blue[100]!, _onEventsTap));
+      icons.add(_buildIconColumn(Icons.favorite, "Check Health",
+          Colors.blue[100]!, _onHealthCheckTap));
     }
 
-    // Wrap icons in a Row, centering them when there is only one or two icons
+    // Return a centered Wrap widget for responsiveness
     return [
-      Row(
-        mainAxisAlignment: icons.length == 1
-            ? MainAxisAlignment.center // Center when there is one icon
-            : MainAxisAlignment.start, // Space out when there are more
-        children: spacedIcons,
+      Wrap(
+        spacing: 20.0, // Horizontal space between icons
+        runSpacing: 20.0, // Vertical space between icons
+        alignment: WrapAlignment.center, // Center-align the icons horizontally
+        children: icons,
       ),
     ];
   }
 
   // Example onTap actions
-  void _onHealthTap() {
-    print("Health icon tapped");
-    // Add your desired behavior here
-  }
-
-  void _onCheckUpTap() {
+  void _onEventsTap() {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -481,11 +477,30 @@ class _UserDashboardState extends State<UserDashboard>
     // Add your desired behavior here
   }
 
-  void _onMedicationTap() {
+  void _onDietaryTap() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => DietaryConsultation()),
+    );
+    // Add your desired behavior here
+  }
+
+  void _onCheckupTap() {
     Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) => NearestDoctorsPage(
+                userId: widget.userId,
+              )),
+    );
+    // Add your desired behavior here
+  }
+
+  void _onHealthCheckTap() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => ViewMetricsScreen(
                 userId: widget.userId,
               )),
     );
