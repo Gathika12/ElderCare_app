@@ -100,7 +100,7 @@ class _UserDashboardState extends State<UserDashboard>
   // Fetch package status from API
   Future<void> _fetchPackageStatus() async {
     final url = Uri.parse(
-        'http://192.168.1.4/eldercare/package_status.php?id=${widget.userId}');
+        'http://10.0.2.2/eldercare/package_status.php?id=${widget.userId}');
     try {
       final response = await http.get(url);
       print('Response Status Code: ${response.statusCode}');

@@ -42,7 +42,7 @@ class _MainBottomNavState extends State<MainBottomNav> {
         userId: widget.userId,
       ),
       HelpContactPage(),
-      UserProfile(email: widget.email), // Access email from widget
+      UserProfile(userId: widget.userId), // Access email from widget
     ];
   }
 
@@ -141,7 +141,10 @@ class _MainBottomNavState extends State<MainBottomNav> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => UserAdditional()),
+                  MaterialPageRoute(
+                      builder: (context) => UserAdditional(
+                            userId: widget.userId,
+                          )),
                 );
               },
             ),

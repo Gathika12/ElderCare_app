@@ -4,9 +4,9 @@ import 'dart:convert';
 import 'package:qr_flutter/qr_flutter.dart'; // Import the QR code package
 
 class UserProfile extends StatefulWidget {
-  final String email;
+  final String userId;
 
-  UserProfile({Key? key, required this.email}) : super(key: key);
+  UserProfile({Key? key, required this.userId}) : super(key: key);
 
   @override
   _UserProfileState createState() => _UserProfileState();
@@ -17,6 +17,7 @@ class _UserProfileState extends State<UserProfile> {
   String nic = '';
   String birthday = '';
   String age = '';
+  String email = '';
   String gender = '';
   String mobileNo = '';
   String bloodGroup = '';
@@ -31,7 +32,7 @@ class _UserProfileState extends State<UserProfile> {
   Future<void> fetchUserProfile() async {
     try {
       final response = await http.get(Uri.parse(
-          'http://10.0.2.2/eldercare/get_user.php?email=${widget.email}'));
+          'http://10.0.2.2/eldercare/get_user.php?id=${widget.userId}'));
 
       if (response.statusCode == 200) {
         final data = response.body.trim();
@@ -44,6 +45,7 @@ class _UserProfileState extends State<UserProfile> {
               fullName = jsonData['full_name'] ?? '';
               nic = jsonData['nic']?.toString() ?? '';
               age = jsonData['age']?.toString() ?? '';
+              email = jsonData['email']?.toString() ?? '';
               bloodGroup = jsonData['blood_group'] ?? '';
               healthIssues = jsonData['health_issues'] ?? '';
             });
@@ -72,7 +74,8 @@ class _UserProfileState extends State<UserProfile> {
             height: 200.0,
             child: Center(
               child: QrImageView(
-                data: 'NIC: $nic\nFull Name: $fullName\nEmail: ${widget.email}',
+                data:
+                    'NIC: $nic\nFull Name: $fullName\nUserID: ${widget.userId}',
                 version: QrVersions.auto,
                 size: 200.0,
               ),
@@ -129,7 +132,7 @@ class _UserProfileState extends State<UserProfile> {
                 SizedBox(height: 10.0),
                 ProfileField(label: 'Age', value: age),
                 SizedBox(height: 10.0),
-                ProfileField(label: 'Email', value: widget.email),
+                ProfileField(label: 'Email', value: email),
                 SizedBox(height: 10.0),
                 ProfileField(label: 'Blood Group', value: bloodGroup),
                 SizedBox(height: 10.0),

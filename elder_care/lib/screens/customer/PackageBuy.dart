@@ -68,8 +68,7 @@ class _PackageBuyState extends State<PackageBuy> {
   Future<void> fetchPackageDetails() async {
     try {
       final response = await http.get(Uri.parse(
-          'http://10.0.2.2/eldercare/packages.php?package_name=${widget
-              .packageName}'));
+          'http://10.0.2.2/eldercare/packages.php?package_name=${widget.packageName}'));
 
       if (response.statusCode == 200) {
         setState(() {
@@ -114,116 +113,115 @@ class _PackageBuyState extends State<PackageBuy> {
             children: [
               if (isLoading)
                 Center(child: CircularProgressIndicator())
+              else if (packageData != null && packageData.containsKey('error'))
+                Center(
+                  child: Text(
+                    packageData['error'],
+                    style: TextStyle(color: Colors.red, fontSize: 16),
+                  ),
+                )
               else
-                if (packageData != null && packageData.containsKey('error'))
-                  Center(
-                    child: Text(
-                      packageData['error'],
-                      style: TextStyle(color: Colors.red, fontSize: 16),
+                Column(
+                  children: [
+                    _buildTextField('User ID', userIdController),
+                    SizedBox(height: 16),
+                    _buildTextField('User Name', userNameController),
+                    SizedBox(height: 16),
+                    _buildTextField('Package Name', packageNameController),
+                    SizedBox(height: 16),
+                    _buildTextField('Package Price', priceController),
+                    SizedBox(height: 16),
+                    _buildTextField('Payee Name', payeeNameController),
+                    SizedBox(height: 16),
+                    Text(
+                      'Upload Slip Image',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
-                  )
-                else
-                  Column(
-                    children: [
-                      _buildTextField('User ID', userIdController),
-                      SizedBox(height: 16),
-                      _buildTextField('User Name', userNameController),
-                      SizedBox(height: 16),
-                      _buildTextField('Package Name', packageNameController),
-                      SizedBox(height: 16),
-                      _buildTextField('Package Price', priceController),
-                      SizedBox(height: 16),
-                      _buildTextField('Payee Name', payeeNameController),
-                      SizedBox(height: 16),
-                      Text(
-                        'Upload Slip Image',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
+                    SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        height: 150,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey, width: 1),
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.grey[200],
+                        ),
+                        child: slipImage == null
+                            ? Center(
+                                child: Text(
+                                  'Tap to upload image',
+                                  style: TextStyle(
+                                      color: Colors.grey[600], fontSize: 16),
+                                ),
+                              )
+                            : Image.file(
+                                slipImage!,
+                                fit: BoxFit.cover,
+                              ),
                       ),
-                      SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: Container(
-                          height: 150,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey, width: 1),
-                            borderRadius: BorderRadius.circular(8),
-                            color: Colors.grey[200],
-                          ),
-                          child: slipImage == null
-                              ? Center(
-                            child: Text(
-                              'Tap to upload image',
+                    ),
+                    SizedBox(height: 24),
+                    Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 4,
+                      color: Colors.teal[50],
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Payment Information',
                               style: TextStyle(
-                                  color: Colors.grey[600], fontSize: 16),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.teal[800],
+                              ),
                             ),
-                          )
-                              : Image.file(
-                            slipImage!,
-                            fit: BoxFit.cover,
-                          ),
+                            SizedBox(height: 12),
+                            Text(
+                              'Account Name: Eldercare System',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.teal[700],
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Account Number: 1234567890',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.teal[700],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 24),
-                      Card(
+                    ),
+                    SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: _onPay,
+                      child: Text(
+                        'Pay',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 50, vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        elevation: 4,
-                        color: Colors.teal[50],
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Payment Information',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.teal[800],
-                                ),
-                              ),
-                              SizedBox(height: 12),
-                              Text(
-                                'Account Name: Eldercare System',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.teal[700],
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Account Number: 1234567890',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.teal[700],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ),
-                      SizedBox(height: 32),
-                      ElevatedButton(
-                        onPressed: _onPay,
-                        child: Text(
-                          'Pay',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
-                          padding:
-                          EdgeInsets.symmetric(horizontal: 50, vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -296,5 +294,4 @@ class _PackageBuyState extends State<PackageBuy> {
       );
     }
   }
-
 }
