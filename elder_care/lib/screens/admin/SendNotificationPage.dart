@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
@@ -8,6 +9,7 @@ class SendNotificationPage extends StatefulWidget {
 }
 
 class _SendNotificationPageState extends State<SendNotificationPage> {
+  final RentApi apiService = RentApi();
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   String? selectedFilePath;
@@ -30,7 +32,8 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
   // Function to send notification
   Future<void> sendNotification(BuildContext context) async {
     final String apiUrl =
-        'http://192.168.1.4/eldercare/insert_notifications.php'; // Replace with your actual API URL
+        Uri.parse('${apiService.mainurl()}/insert_notifications.php')
+            .toString(); // Replace with your actual API URL
 
     // Map the selected type to the appropriate value
     final String typeValue = selectedType == 'All Users' ? '0' : '1';

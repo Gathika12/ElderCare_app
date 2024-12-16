@@ -1,11 +1,10 @@
 import 'dart:convert';
-
+import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/eldercare.dart';
 import 'package:elder_care/screens/ChooseRolePage.dart';
 //import 'package:elder_care/screens/MenuDashboard.dart';
 import 'package:elder_care/screens/admin/MenuDashboard.dart';
 import 'package:elder_care/screens/merchant/serviceprovidehome.dart';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -19,6 +18,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final RentApi apiService = RentApi();
   String _email = '';
   String _password = '';
   final TextEditingController _emailController = TextEditingController();
@@ -41,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
     // Proceed with the actual login process for other credentials
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.4/eldercare/login.php'),
+        Uri.parse('${apiService.mainurl()}/login.php'),
         body: {
           'email': email,
           'password': password,
@@ -121,6 +121,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } catch (e) {
       _showDialog(context, 'Error', 'An unexpected error occurred: $e');
+      print('hiiiiiiii: $e');
     }
   }
 

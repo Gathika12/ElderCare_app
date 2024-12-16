@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ViewproviderAdditional extends StatefulWidget {
-  const ViewproviderAdditional({Key? key}) : super(key: key);
+  final String serviceProviderId; // Added serviceProviderId as a parameter
+
+  const ViewproviderAdditional({Key? key, required this.serviceProviderId})
+      : super(key: key);
 
   @override
   _ViewproviderAdditionalState createState() => _ViewproviderAdditionalState();
@@ -18,13 +21,20 @@ class _ViewproviderAdditionalState extends State<ViewproviderAdditional> {
   @override
   void initState() {
     super.initState();
+    print(
+        'Service Provider  ID: ${widget.serviceProviderId}'); // Log the serviceProviderId
     fetchServices(); // Fetch services when the widget is initialized
   }
 
   Future<void> fetchServices() async {
     try {
-      final response = await http
-          .get(Uri.parse('http://localhost/eldercare/viewpackagedetails.php'));
+      final response = await http.post(
+        Uri.parse('http://192.168.1.4/eldercare/viewpackagedetails.php'),
+        body: {
+          'pid': widget
+              .serviceProviderId, // Send serviceProviderId as a POST parameter
+        },
+      );
 
       if (response.statusCode == 200) {
         // Clean the response by removing the invalid "Connected" text
@@ -59,7 +69,7 @@ class _ViewproviderAdditionalState extends State<ViewproviderAdditional> {
   Future<void> approveService(int serviceId) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost/eldercare/approve_service.php'),
+        Uri.parse('http://192.168.1.4/eldercare/approve_service.php'),
         body: {
           'id': serviceId.toString(),
         },
@@ -112,8 +122,9 @@ class _ViewproviderAdditionalState extends State<ViewproviderAdditional> {
                       final service = services[index];
 
                       // Ensure serviceId is parsed as an integer
-                      final serviceId = int.tryParse(service['id'] ??
-                          '0'); // Parse serviceId to int, with a fallback
+                      final serviceId = service['id'] != null
+                          ? int.tryParse(service['id'].toString())
+                          : 0; // Ensure it's an integer
 
                       // Check if the service is approved
                       final isApproved = service['approvestatus'] ==
@@ -128,7 +139,7 @@ class _ViewproviderAdditionalState extends State<ViewproviderAdditional> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                  'ID: ${serviceId.toString()}'), // Show service ID
+                                  'ID: ${serviceId.toString()}'), // Show service ID as String
                               Text(service['description'] ??
                                   'No Description'), // Fallback if description is missing
                               // Show success message if approved

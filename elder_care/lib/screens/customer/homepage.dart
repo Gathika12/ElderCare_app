@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/customer/meal_plan.dart';
 import 'package:elder_care/screens/customer/nearest_doctors.dart';
 import 'package:elder_care/screens/customer/special_events.dart';
@@ -21,6 +22,7 @@ class UserDashboard extends StatefulWidget {
 
 class _UserDashboardState extends State<UserDashboard>
     with SingleTickerProviderStateMixin {
+  final RentApi apiService = RentApi();
   int _currentImageIndex = 0;
   AudioPlayer _audioPlayer = AudioPlayer();
   String? _currentTrackUrl;
@@ -100,7 +102,7 @@ class _UserDashboardState extends State<UserDashboard>
   // Fetch package status from API
   Future<void> _fetchPackageStatus() async {
     final url = Uri.parse(
-        'http://10.0.2.2/eldercare/package_status.php?id=${widget.userId}');
+        '${apiService.mainurl()}/package_status.php?id=${widget.userId}');
     try {
       final response = await http.get(url);
       print('Response Status Code: ${response.statusCode}');

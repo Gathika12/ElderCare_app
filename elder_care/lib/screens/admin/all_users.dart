@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -10,6 +11,7 @@ class UsersTable extends StatefulWidget {
 }
 
 class _UsersTableState extends State<UsersTable> {
+  final RentApi apiService = RentApi();
   List<dynamic> users = [];
   List<dynamic> filteredUsers = [];
   bool isLoading = true;
@@ -35,7 +37,8 @@ class _UsersTableState extends State<UsersTable> {
     });
 
     try {
-      final response = await http.get(Uri.parse('http://192.168.1.4/eldercare/all_users.php'));
+      final response = await http.get(
+          Uri.parse('http://gathikacolambage.site/eldercare//all_users.php'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -53,6 +56,7 @@ class _UsersTableState extends State<UsersTable> {
     } catch (error) {
       setState(() {
         errorMessage = 'An error occurred: $error';
+        print('error:${error}');
         isLoading = false;
       });
     }
@@ -118,76 +122,74 @@ class _UsersTableState extends State<UsersTable> {
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : errorMessage != null
-          ? Center(child: Text(errorMessage!))
-          : Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: InputDecoration(
-                labelText: 'Search by Name or ID',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search, color: Colors.teal),
-              ),
-              onChanged: (value) {
-                searchFilter = value;
-                applyFilters();
-              },
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  sortColumnIndex: sortColumnIndex,
-                  sortAscending: sortAscending,
-                  headingRowColor: MaterialStateColor.resolveWith(
-                        (states) => Colors.grey,
-                  ),
-                  headingTextStyle: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  columns: [
-                    DataColumn(
-                      label: Text('ID'),
-                      numeric: true,
-                      onSort: (index, ascending) =>
-                          onSort(index, ascending),
+              ? Center(child: Text(errorMessage!))
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Search by Name or ID',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.search, color: Colors.teal),
+                        ),
+                        onChanged: (value) {
+                          searchFilter = value;
+                          applyFilters();
+                        },
+                      ),
                     ),
-                    DataColumn(
-                      label: Text('Name'),
-                      onSort: (index, ascending) =>
-                          onSort(index, ascending),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: DataTable(
+                            sortColumnIndex: sortColumnIndex,
+                            sortAscending: sortAscending,
+                            headingRowColor: MaterialStateColor.resolveWith(
+                              (states) => Colors.grey,
+                            ),
+                            headingTextStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            columns: [
+                              DataColumn(
+                                label: Text('ID'),
+                                numeric: true,
+                                onSort: (index, ascending) =>
+                                    onSort(index, ascending),
+                              ),
+                              DataColumn(
+                                label: Text('Name'),
+                                onSort: (index, ascending) =>
+                                    onSort(index, ascending),
+                              ),
+                              DataColumn(
+                                label: Text('Email'),
+                                onSort: (index, ascending) =>
+                                    onSort(index, ascending),
+                              ),
+                              DataColumn(label: Text('City')),
+                              DataColumn(label: Text('Mobile No')),
+                            ],
+                            rows: filteredUsers.map((user) {
+                              return DataRow(
+                                cells: [
+                                  DataCell(Text(user['id'].toString())),
+                                  DataCell(Text(user['full_name'] ?? 'N/A')),
+                                  DataCell(Text(user['email'] ?? 'N/A')),
+                                  DataCell(Text(user['city'] ?? 'N/A')),
+                                  DataCell(Text(user['mobile_no'] ?? 'N/A')),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
                     ),
-                    DataColumn(
-                      label: Text('Email'),
-                      onSort: (index, ascending) =>
-                          onSort(index, ascending),
-                    ),
-                    DataColumn(label: Text('City')),
-                    DataColumn(label: Text('Mobile No')),
                   ],
-                  rows: filteredUsers.map((user) {
-                    return DataRow(
-                      cells: [
-                        DataCell(Text(user['id'].toString())),
-                        DataCell(Text(user['full_name'] ?? 'N/A')),
-                        DataCell(Text(user['email'] ?? 'N/A')),
-                        DataCell(Text(user['city'] ?? 'N/A')),
-                        DataCell(Text(user['mobile_no'] ?? 'N/A')),
-                      ],
-                    );
-                  }).toList(),
                 ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
-
-

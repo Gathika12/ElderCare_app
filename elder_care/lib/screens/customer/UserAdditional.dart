@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/customer/PackageBuy.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +14,7 @@ class UserAdditional extends StatefulWidget {
 }
 
 class _UserAdditionalState extends State<UserAdditional> {
+  final RentApi apiService = RentApi();
   List<dynamic> services = [];
   bool isLoading = true;
   String errorMessage = '';
@@ -26,8 +28,8 @@ class _UserAdditionalState extends State<UserAdditional> {
 
   Future<void> fetchServices() async {
     try {
-      final response = await http.get(
-          Uri.parse('http://10.0.2.2/eldercare/userviewpackagedetails.php'));
+      final response = await http
+          .get(Uri.parse('${apiService.mainurl()}/userviewpackagedetails.php'));
 
       if (response.statusCode == 200) {
         String cleanedResponse = response.body.replaceFirst('Connected', '');

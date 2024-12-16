@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -11,6 +12,7 @@ class ViewAdditionalService extends StatefulWidget {
 }
 
 class _ViewAdditionalServiceState extends State<ViewAdditionalService> {
+  final RentApi apiService = RentApi();
   List<dynamic> services = []; // To hold the fetched services
   bool isLoading = true; // To track loading state
   String errorMessage = ''; // To display error messages
@@ -24,7 +26,7 @@ class _ViewAdditionalServiceState extends State<ViewAdditionalService> {
   Future<void> fetchServices() async {
     try {
       final response = await http
-          .get(Uri.parse('http://192.168.1.4/eldercare/viewpackagedetails.php'));
+          .get(Uri.parse('${apiService.mainurl()}/viewpackagedetails.php'));
 
       if (response.statusCode == 200) {
         // Clean the response by removing the invalid "Connected" text
@@ -67,8 +69,7 @@ class _ViewAdditionalServiceState extends State<ViewAdditionalService> {
 
     try {
       // Define the URL of your PHP API
-      final url =
-          Uri.parse('http://192.168.1.4/eldercare/updateApprovalStatus.php');
+      final url = Uri.parse('${apiService.mainurl()}/updateApprovalStatus.php');
 
       // Create the body of the POST request with approvestatus as a string
       final body = {

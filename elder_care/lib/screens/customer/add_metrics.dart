@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -11,6 +12,7 @@ class AddMetricsScreen extends StatefulWidget {
 }
 
 class _AddMetricsScreenState extends State<AddMetricsScreen> {
+  final RentApi apiService = RentApi();
   final TextEditingController _bloodPressureController =
       TextEditingController();
   final TextEditingController _sugarLevelController = TextEditingController();
@@ -29,7 +31,7 @@ class _AddMetricsScreenState extends State<AddMetricsScreen> {
       };
 
       final response = await http.post(
-        Uri.parse('http://192.168.1.4/eldercare/add_metrics.php'),
+        Uri.parse('${apiService.mainurl()}/add_metrics.php'),
         body: metricsData,
       );
       print(widget.userId);

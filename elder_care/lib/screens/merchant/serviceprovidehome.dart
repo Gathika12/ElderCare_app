@@ -1,11 +1,13 @@
-import 'package:elder_care/screens/merchant/AdditionalPackages.dart';
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+
+import 'package:elder_care/apiservice.dart';
+import 'package:elder_care/screens/merchant/AdditionalPackages.dart';
 import 'package:elder_care/screens/merchant/MedicalViews.dart';
+import 'package:elder_care/screens/merchant/ServiceProvideProfile.dart';
 import 'package:elder_care/screens/merchant/scan_qr.dart';
-import 'package:elder_care/screens/customer/contact.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class ServiceProvidePage extends StatefulWidget {
   final String serviceProviderId;
@@ -21,13 +23,17 @@ class ServiceProvidePage extends StatefulWidget {
 }
 
 class _ServiceProvidePageState extends State<ServiceProvidePage> {
+  final RentApi apiService = RentApi();
   Map<String, dynamic>? merchantDetails;
 
   Future<void> fetchMerchantDetails() async {
+    // Build the URL dynamically using the API service
     final String apiUrl =
-        "http://10.0.2.2/eldercare/merchant_details.php?id=${widget.serviceProviderId}";
+        '${apiService.mainurl()}/merchant_details.php?id=${widget.serviceProviderId}';
+
     try {
       final response = await http.get(Uri.parse(apiUrl));
+
       if (response.statusCode == 200) {
         setState(() {
           merchantDetails = json.decode(response.body);
@@ -45,6 +51,7 @@ class _ServiceProvidePageState extends State<ServiceProvidePage> {
   @override
   void initState() {
     super.initState();
+    print("Service Provider ID: ${widget.serviceProviderId}");
     fetchMerchantDetails();
   }
 
@@ -59,17 +66,10 @@ class _ServiceProvidePageState extends State<ServiceProvidePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header with Greeting
                 _buildHeader(),
-
                 SizedBox(height: 20),
-
-                // Details Card
                 _buildDetailsCard(),
-
                 SizedBox(height: 20),
-
-                // Dashboard Shortcuts
                 Text(
                   "Quick Actions",
                   style: TextStyle(
@@ -88,7 +88,6 @@ class _ServiceProvidePageState extends State<ServiceProvidePage> {
     );
   }
 
-  // Header with Greeting
   Widget _buildHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -116,18 +115,31 @@ class _ServiceProvidePageState extends State<ServiceProvidePage> {
             ),
           ],
         ),
-        CircleAvatar(
-          backgroundColor: Color(0xFF0FADAD),
-          child: Icon(
-            Icons.person_outline,
-            color: Colors.white,
+        GestureDetector(
+          onTap: () {
+            print(
+                "Navigating to profile with Service Provider ID: ${widget.serviceProviderId}");
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ServiceProvideProfile(
+                  serviceProviderId: widget.serviceProviderId,
+                ),
+              ),
+            );
+          },
+          child: CircleAvatar(
+            backgroundColor: Color(0xFF0FADAD),
+            child: Icon(
+              Icons.person_outline,
+              color: Colors.white,
+            ),
           ),
         ),
       ],
     );
   }
 
-  // Details Card
   Widget _buildDetailsCard() {
     return Card(
       shape: RoundedRectangleBorder(
@@ -136,49 +148,92 @@ class _ServiceProvidePageState extends State<ServiceProvidePage> {
       color: Color(0xFF0FADAD),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Row(
+        child: Stack(
           children: [
-            CircleAvatar(
-              backgroundImage: AssetImage('assets/images/profile.jpg'),
-              backgroundColor: Colors.white,
-              radius: 30,
-            ),
-            SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Row(
               children: [
-                Text(
-                  merchantDetails?["full_name"] ?? "Loading...",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                GestureDetector(
+                  onTap: () {
+                    print(
+                        "Navigating to profile with Service Provider ID: ${widget.serviceProviderId}");
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ServiceProvideProfile(
+                          serviceProviderId: widget.serviceProviderId,
+                        ),
+                      ),
+                    );
+                  },
+                  child: CircleAvatar(
+                    backgroundImage: AssetImage('assets/images/profile.jpg'),
+                    backgroundColor: Colors.white,
+                    radius: 30,
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  merchantDetails?["category"] ?? "Loading...",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Row(
+                SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.calendar_today,
-                      color: Colors.white70,
-                      size: 16,
-                    ),
-                    SizedBox(width: 8),
                     Text(
-                      DateFormat('EEEE, d MMMM').format(DateTime.now()),
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      merchantDetails?["full_name"] ?? "Loading...",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      merchantDetails?["category"] ?? "Loading...",
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          color: Colors.white70,
+                          size: 16,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          DateFormat('EEEE, d MMMM').format(DateTime.now()),
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ],
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: GestureDetector(
+                onTap: () {
+                  print(
+                      "Navigating to profile with Service Provider ID: ${widget.serviceProviderId}");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ServiceProvideProfile(
+                        serviceProviderId: widget.serviceProviderId,
+                      ),
+                    ),
+                  );
+                },
+                child: CircleAvatar(
+                  backgroundColor: Color(0xFF0FADAD),
+                  child: Icon(
+                    Icons.person_outline,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -186,7 +241,6 @@ class _ServiceProvidePageState extends State<ServiceProvidePage> {
     );
   }
 
-  // Dashboard Shortcut Grid
   Widget _buildShortcutGrid() {
     return GridView.count(
       crossAxisCount: 2,
@@ -197,18 +251,24 @@ class _ServiceProvidePageState extends State<ServiceProvidePage> {
       crossAxisSpacing: 12,
       children: [
         _shortcutCard(Icons.medical_services, "Packages", () {
+          print(
+              "Navigating to Medical Views with Service Provider ID: ${widget.serviceProviderId}");
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => MedicalViews()),
           );
         }),
         _shortcutCard(Icons.qr_code, "QR Scanner", () {
+          print(
+              "Navigating to QR Scanner with Service Provider ID: ${widget.serviceProviderId}");
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => QRScanPage()),
           );
         }),
         _shortcutCard(Icons.more_horiz, "Additional Services", () {
+          print(
+              "Navigating to Additional Packages with Service Provider ID: ${widget.serviceProviderId}");
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -219,7 +279,8 @@ class _ServiceProvidePageState extends State<ServiceProvidePage> {
           );
         }),
         _shortcutCard(Icons.payment, "Payments", () {
-          print("Navigate to Payments Page");
+          print(
+              "Navigating to Payments with Service Provider ID: ${widget.serviceProviderId}");
           // Add navigation to payments page here
         }),
       ],

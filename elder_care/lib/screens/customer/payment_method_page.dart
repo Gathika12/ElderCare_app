@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/customer/payment.dart';
 
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ class PaymentDetailsPage extends StatefulWidget {
 }
 
 class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
+  final RentApi apiService = RentApi();
   TextEditingController _dateController = TextEditingController();
   TextEditingController _nameController = TextEditingController();
   TextEditingController _amountController = TextEditingController();
@@ -45,26 +47,33 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
   }
 
   Future<void> submitPayment() async {
-    final url = Uri.parse("http://10.0.2.2/eldercare/payment.php");
+    // Build the URL dynamically using the API service
+    final String apiUrl = '${apiService.mainurl()}/payment.php';
+    final Uri url = Uri.parse(apiUrl);
 
     try {
+      // Prepare the request body
+      final Map<String, String> requestBody = {
+        "cardholder_name": _nameController.text,
+        "amount": _amountController.text,
+        "date": _dateController.text,
+        "remark": _remarkController.text,
+      };
+
+      // Send POST request
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "cardholder_name": _nameController.text,
-          "amount": _amountController.text,
-          "date": _dateController.text,
-          "remark": _remarkController.text,
-        }),
+        body: jsonEncode(requestBody),
       );
 
+      // Handle the response
       if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
 
         if (jsonResponse['status'] == 'success') {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Payment submitted successfully!")),
+            const SnackBar(content: Text("Payment submitted successfully!")),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -73,12 +82,12 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to submit payment.")),
+          const SnackBar(content: Text("Failed to submit payment.")),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Network error. Please try again.")),
+        const SnackBar(content: Text("Network error. Please try again.")),
       );
     }
   }

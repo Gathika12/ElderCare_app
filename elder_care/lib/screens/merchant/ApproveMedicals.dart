@@ -45,7 +45,7 @@ class _ApproveMedicalsState extends State<ApproveMedicals> {
     // Send POST request to the API
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2/eldercare/UpdateMedical.php'),
+        Uri.parse('http://192.168.1.4/eldercare/UpdateMedical.php'),
         body: data,
       );
 

@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -12,6 +13,7 @@ class ApprovalPage extends StatefulWidget {
 }
 
 class _ApprovalPageState extends State<ApprovalPage> {
+  final RentApi apiService = RentApi();
   Map<String, dynamic>? billDetails;
   bool isLoading = true;
   bool isApproving = false;
@@ -25,7 +27,8 @@ class _ApprovalPageState extends State<ApprovalPage> {
   Future<void> fetchBillDetails() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.1.4/eldercare/approve_payment.php?id=${widget.elderId}'),
+        Uri.parse(
+            '${apiService.mainurl()}/approve_payment.php?elder_id=${widget.elderId}'),
       );
 
       if (response.statusCode == 200) {
@@ -48,7 +51,8 @@ class _ApprovalPageState extends State<ApprovalPage> {
         setState(() {
           isLoading = false;
         });
-        final errorMessage = 'Failed to fetch bill details: ${response.statusCode}';
+        final errorMessage =
+            'Failed to fetch bill details: ${response.statusCode}';
         print(errorMessage);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(errorMessage)),
@@ -66,14 +70,24 @@ class _ApprovalPageState extends State<ApprovalPage> {
   }
 
   Future<void> approvePayment() async {
+    if (billDetails == null || !billDetails!.containsKey('id')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: Unable to find bill ID to approve.')),
+      );
+      return;
+    }
+
     setState(() {
       isApproving = true;
     });
 
     try {
+      // Convert the ID to a string
+      final String id = billDetails!['id'].toString();
+
       final response = await http.post(
-        Uri.parse('http://192.168.1.4/eldercare/approve_payment.php'),
-        body: {'id': widget.elderId},
+        Uri.parse('${apiService.mainurl()}/approve_payment.php'),
+        body: {'id': id}, // Ensure 'id' is a string
       );
 
       if (response.statusCode == 200) {
@@ -114,8 +128,6 @@ class _ApprovalPageState extends State<ApprovalPage> {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,74 +138,74 @@ class _ApprovalPageState extends State<ApprovalPage> {
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : billDetails == null
-          ? Center(child: Text('No bill details found'))
-          : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.person, color: Colors.teal, size: 30),
-                    SizedBox(width: 10),
-                    Text(
-                      'Elder ID: ${billDetails!['elder_id']}',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 20),
-                _buildDetailRow(
-                  label: 'Payment Type',
-                  value: billDetails!['payment_type'],
-                ),
-                _buildDetailRow(
-                  label: 'Service',
-                  value: billDetails!['service'],
-                ),
-                _buildDetailRow(
-                  label: 'Amount',
-                  value: '\$${billDetails!['amount']}',
-                ),
-                _buildDetailRow(
-                  label: 'Paid By',
-                  value: billDetails!['paidby'],
-                ),
-                _buildDetailRow(
-                  label: 'Date',
-                  value: billDetails!['date'],
-                ),
-                SizedBox(height: 30),
-                isApproving
-                    ? Center(child: CircularProgressIndicator())
-                    : ElevatedButton.icon(
-                  onPressed: approvePayment,
-                  icon: Icon(Icons.check),
-                  label: Text('Approve Payment'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 15),
+              ? Center(child: Text('No bill details found'))
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Card(
+                    elevation: 4,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.person, color: Colors.teal, size: 30),
+                              SizedBox(width: 10),
+                              Text(
+                                'Elder ID: ${billDetails!['elder_id']}',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          _buildDetailRow(
+                            label: 'Payment Type',
+                            value: billDetails!['payment_type'],
+                          ),
+                          _buildDetailRow(
+                            label: 'Service',
+                            value: billDetails!['service'],
+                          ),
+                          _buildDetailRow(
+                            label: 'Amount',
+                            value: '\$${billDetails!['amount']}',
+                          ),
+                          _buildDetailRow(
+                            label: 'Paid By',
+                            value: billDetails!['paidby'],
+                          ),
+                          _buildDetailRow(
+                            label: 'Date',
+                            value: billDetails!['date'],
+                          ),
+                          SizedBox(height: 30),
+                          isApproving
+                              ? Center(child: CircularProgressIndicator())
+                              : ElevatedButton.icon(
+                                  onPressed: approvePayment,
+                                  icon: Icon(Icons.check),
+                                  label: Text('Approve Payment'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.teal,
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 30, vertical: 15),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 

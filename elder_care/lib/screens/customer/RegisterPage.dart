@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -9,6 +10,7 @@ class CustomerSignupPage extends StatefulWidget {
 }
 
 class _CustomerSignupPageState extends State<CustomerSignupPage> {
+  final RentApi apiService = RentApi();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _nicController = TextEditingController();
@@ -141,7 +143,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
       };
 
       final response = await http.post(
-        Uri.parse('http://10.0.2.2/eldercare/register.php'),
+        Uri.parse('${apiService.mainurl()}/register.php'),
         headers: <String, String>{'Content-Type': 'application/json'},
         body: jsonEncode(data),
       );
@@ -284,8 +286,9 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                         lastDate: DateTime(2100),
                       );
                       if (pickedDate != null) {
+                        // Format date as YYYY-MM-DD
                         String formattedDate =
-                            "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                            "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
                         _birthdayController.text = formattedDate;
                       }
                     },

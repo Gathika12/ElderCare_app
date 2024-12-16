@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -13,6 +14,7 @@ class GoldPackageDetail extends StatefulWidget {
 }
 
 class _GoldPackageDetailState extends State<GoldPackageDetail> {
+  final RentApi apiService = RentApi();
   Map<String, dynamic>? packageData;
   bool isLoading = true;
 
@@ -25,7 +27,7 @@ class _GoldPackageDetailState extends State<GoldPackageDetail> {
   Future<void> _fetchPackageDetails() async {
     try {
       final response = await http.get(Uri.parse(
-          'http://10.0.2.2/eldercare/packages.php?package_name=${widget.packageName}'));
+          '${apiService.mainurl()}/packages.php?package_name=${widget.packageName}'));
 
       print('Response Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}'); // Print the raw response body

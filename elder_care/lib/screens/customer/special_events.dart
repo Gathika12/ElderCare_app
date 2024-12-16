@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'package:elder_care/apiservice.dart';
+import 'package:elder_care/screens/customer/EventDetailsPage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class EventsScreen extends StatefulWidget {
   final String userId;
@@ -12,45 +15,39 @@ class EventsScreen extends StatefulWidget {
 }
 
 class _EventsScreenState extends State<EventsScreen> {
+  final RentApi apiService = RentApi();
   List<Map<String, dynamic>> _events = [];
   bool _isLoading = true;
 
   Future<void> _fetchEvents() async {
     final String apiUrl =
-        'http://10.0.2.2/eldercare/get_events.php?id=${widget.userId}'; // Replace with your actual API endpoint
+        Uri.parse('${apiService.mainurl()}/get_events.php?id=${widget.userId}')
+            .toString();
+    ;
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      print('Fetching events from API: $apiUrl');
-
       final response = await http.get(Uri.parse(apiUrl));
-
-      print('Response status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body);
 
         if (body is List) {
-          // If the response is a list, parse it into events
           setState(() {
-            _events = body.map((e) => Map<String, dynamic>.from(e)).toList();
+            _events = body
+                .map((e) => Map<String, dynamic>.from(e))
+                .where(_isEventValid) // Filter out past events
+                .toList();
             _isLoading = false;
           });
-          print('Parsed events: $_events');
         } else if (body is Map && body.containsKey('message')) {
-          // If the response contains a message (e.g., "No records found")
           setState(() {
             _events = [];
             _isLoading = false;
           });
-          print('API message: ${body['message']}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(body['message'])),
-          );
         } else {
           throw Exception('Unexpected response format');
         }
@@ -58,13 +55,24 @@ class _EventsScreenState extends State<EventsScreen> {
         throw Exception('Failed to load events: HTTP ${response.statusCode}');
       }
     } catch (e) {
-      print('Error occurred: $e');
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+    }
+  }
+
+  // Check if the event date and time are valid
+  bool _isEventValid(Map<String, dynamic> event) {
+    if (event['event_date'] == null || event['event_time'] == null) {
+      return false;
+    }
+
+    try {
+      final eventDateTime = DateFormat('yyyy-MM-dd HH:mm')
+          .parse('${event['event_date']} ${event['event_time']}');
+      return eventDateTime.isAfter(DateTime.now());
+    } catch (e) {
+      return false;
     }
   }
 
@@ -117,15 +125,9 @@ class _EventsScreenState extends State<EventsScreen> {
                         event['image_url'].isNotEmpty
                     ? Image.network(
                         event['image_url'],
-                        height: 250, // Increased height for better visibility
+                        height: 250,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          height: 250,
-                          color: Colors.grey[200],
-                          child: Icon(Icons.broken_image,
-                              size: 60, color: Colors.grey),
-                        ),
                       )
                     : Container(
                         height: 250,
@@ -229,13 +231,18 @@ class _EventsScreenState extends State<EventsScreen> {
                       borderRadius: BorderRadius.circular(8.0)),
                 ),
                 onPressed: () {
-                  // Add action for "View Details" if needed
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text('View details for "${event['title']}"')),
+                  // Navigate to Event Details Page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EventDetailsPage(event: event),
+                    ),
                   );
                 },
-                child: Text('View Details'),
+                child: Text(
+                  'View Details',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ),

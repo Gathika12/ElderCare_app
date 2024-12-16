@@ -1,3 +1,4 @@
+import 'package:elder_care/screens/merchant/user_date.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -29,10 +30,20 @@ class _QRScanPageState extends State<QRScanPage> {
                       scannedData = code;
                     });
 
-                    // Optionally, show a SnackBar with the scanned data
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Scanned: $code')),
-                    );
+                    // Parse the userId from scanned QR data and navigate
+                    final userId = _extractUserId(code);
+                    if (userId != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UserDataPage(userId: userId),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Invalid QR Code')),
+                      );
+                    }
                   }
                 }
               },
@@ -49,5 +60,12 @@ class _QRScanPageState extends State<QRScanPage> {
         ],
       ),
     );
+  }
+
+  String? _extractUserId(String scannedData) {
+    // Assume the QR data contains "userId: <value>"
+    final RegExp regex = RegExp(r'userId:\s*(\d+)');
+    final match = regex.firstMatch(scannedData);
+    return match?.group(1); // Extract the userId
   }
 }

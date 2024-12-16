@@ -1,8 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:elder_care/screens/admin/ServiceProviderControlPage.dart';
 import 'package:elder_care/screens/admin/ViewAdditionalService.dart';
 import 'package:elder_care/screens/admin/bill.dart';
 import 'package:elder_care/screens/admin/user_control.dart';
-import 'package:flutter/material.dart';
+import 'package:elder_care/screens/login_page.dart'; // Replace with your login page import
 
 import 'all_users.dart';
 
@@ -90,6 +91,59 @@ class MenuDashboard extends StatelessWidget {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _showLogoutDialog(context); // Show the logout confirmation dialog
+        },
+        backgroundColor: Colors.teal,
+        child: const Icon(Icons.logout),
+        tooltip: 'Logout',
+      ),
+    );
+  }
+
+  // Show Logout Dialog
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                _logout(context); // Call the logout method
+              },
+              child: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Logout Logic
+  void _logout(BuildContext context) {
+    // Clear user session if necessary (not implemented in this example)
+    // Navigate to the login page
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+          builder: (context) => LoginPage(
+                role: '',
+              )), // Replace with your login page
+      (Route<dynamic> route) => false, // Remove all routes
     );
   }
 }

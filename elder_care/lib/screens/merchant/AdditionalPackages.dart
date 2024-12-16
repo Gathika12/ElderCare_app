@@ -1,15 +1,18 @@
 import 'dart:convert';
+
+import 'package:elder_care/screens/merchant/ViewproviderAdditional.dart';
+import 'package:elder_care/screens/merchant/approveAdditional.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class AdditionalPackages extends StatefulWidget {
-  final String serviceProviderId; // Added to accept serviceProviderId directly
-  final String serviceProviderName; // Optionally added if needed
+  final String serviceProviderId;
+  final String serviceProviderName;
 
   const AdditionalPackages({
     Key? key,
     required this.serviceProviderId,
-    required this.serviceProviderName, // Optional parameter
+    required this.serviceProviderName,
   }) : super(key: key);
 
   @override
@@ -17,50 +20,37 @@ class AdditionalPackages extends StatefulWidget {
 }
 
 class _AdditionalPackagesState extends State<AdditionalPackages> {
-  final TextEditingController _serviceProviderIdController =
-      TextEditingController();
-  final TextEditingController _serviceProviderNameController =
-      TextEditingController();
   final TextEditingController _payeeNameController = TextEditingController();
   final TextEditingController _packageNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
 
-  List<Map<String, dynamic>> packages = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeServiceProviderDetails();
-  }
-
-  void _initializeServiceProviderDetails() {
-    // Set the passed values to controllers or variables
-    _serviceProviderIdController.text = widget.serviceProviderId;
-    _serviceProviderNameController.text = widget.serviceProviderName;
-  }
+  bool isSubmitting = false;
 
   Future<void> _addPackage() async {
-    final String payeeName = _payeeNameController.text;
-    final String packageName = _packageNameController.text;
-    final String description = _descriptionController.text;
-    final String price = _priceController.text;
+    final String payeeName = _payeeNameController.text.trim();
+    final String packageName = _packageNameController.text.trim();
+    final String description = _descriptionController.text.trim();
+    final String price = _priceController.text.trim();
 
-    if (widget.serviceProviderId.isEmpty ||
-        payeeName.isEmpty ||
+    if (payeeName.isEmpty ||
         packageName.isEmpty ||
         description.isEmpty ||
         price.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('All fields are required!')),
+        const SnackBar(content: Text('All fields are required!')),
       );
       return;
     }
 
+    setState(() {
+      isSubmitting = true;
+    });
+
     final Map<String, dynamic> data = {
-      'serviceProviderId': widget.serviceProviderId,
-      'serviceProviderName': widget.serviceProviderName,
-      'payeeName': payeeName,
+      'pid': widget.serviceProviderId,
+      'Providername': widget.serviceProviderName,
+      'payeename': payeeName,
       'packageName': packageName,
       'description': description,
       'price': price,
@@ -68,19 +58,20 @@ class _AdditionalPackagesState extends State<AdditionalPackages> {
 
     try {
       final http.Response response = await http.post(
-        Uri.parse('http://10.0.2.2/eldercare/insert_package.php'),
+        Uri.parse('http://192.168.1.4/eldercare/insert_package.php'),
         headers: <String, String>{'Content-Type': 'application/json'},
         body: json.encode(data),
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Package added successfully!')),
-        );
         _payeeNameController.clear();
         _packageNameController.clear();
         _descriptionController.clear();
         _priceController.clear();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Package added successfully!')),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -91,6 +82,10 @@ class _AdditionalPackagesState extends State<AdditionalPackages> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $e')),
       );
+    } finally {
+      setState(() {
+        isSubmitting = false;
+      });
     }
   }
 
@@ -98,127 +93,148 @@ class _AdditionalPackagesState extends State<AdditionalPackages> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Additional Packages'),
+        title: const Text('Additional Packages'),
         backgroundColor: Colors.teal,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              controller: _serviceProviderIdController,
-              readOnly: true,
-              decoration: InputDecoration(
-                labelText: 'Service Provider ID',
-                border: OutlineInputBorder(),
-              ),
+            // Service Provider ID (Read-only)
+            _buildReadOnlyField(
+              label: 'Service Provider ID',
+              value: widget.serviceProviderId,
             ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _serviceProviderNameController,
-              readOnly: true,
-              decoration: InputDecoration(
-                labelText: 'Service Provider Name',
-                border: OutlineInputBorder(),
-              ),
+            const SizedBox(height: 10),
+
+            // Service Provider Name (Read-only)
+            _buildReadOnlyField(
+              label: 'Service Provider Name',
+              value: widget.serviceProviderName,
             ),
-            SizedBox(height: 10),
-            TextField(
+            const SizedBox(height: 10),
+
+            // Payee Name
+            _buildTextField(
               controller: _payeeNameController,
-              decoration: InputDecoration(
-                labelText: 'Payee Name',
-                border: OutlineInputBorder(),
-              ),
+              label: 'Payee Name',
             ),
-            SizedBox(height: 10),
-            TextField(
+            const SizedBox(height: 10),
+
+            // Package Name
+            _buildTextField(
               controller: _packageNameController,
-              decoration: InputDecoration(
-                labelText: 'Package Name',
-                border: OutlineInputBorder(),
-              ),
+              label: 'Package Name',
             ),
-            SizedBox(height: 10),
-            TextField(
+            const SizedBox(height: 10),
+
+            // Description
+            _buildTextField(
               controller: _descriptionController,
-              decoration: InputDecoration(
-                labelText: 'Description',
-                border: OutlineInputBorder(),
-              ),
+              label: 'Description',
             ),
-            SizedBox(height: 10),
-            TextField(
+            const SizedBox(height: 10),
+
+            // Price
+            _buildTextField(
               controller: _priceController,
-              decoration: InputDecoration(
-                labelText: 'Price',
-                border: OutlineInputBorder(),
-              ),
+              label: 'Price',
               keyboardType: TextInputType.number,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
+
+            // Add Package Button
+            isSubmitting
+                ? const Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+                    onPressed: _addPackage,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 50, vertical: 15),
+                      textStyle: const TextStyle(fontSize: 16),
+                    ),
+                    child: const Text('Add Package'),
+                  ),
+            const SizedBox(height: 20),
+
+            // View All Packages Button
             ElevatedButton(
-              onPressed: _addPackage,
-              child: Text('Add Package'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Added Packages:',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: packages.length,
-              itemBuilder: (context, index) {
-                return PackageCard(packageData: packages[index]);
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ViewproviderAdditional(
+                      serviceProviderId: widget.serviceProviderId,
+                    ),
+                  ),
+                );
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 12, 150, 0),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                textStyle: const TextStyle(fontSize: 16),
+              ),
+              child: const Text('View All Packages'),
+            ),
+            const SizedBox(height: 10),
+
+            // Approve Packages Button
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ApproveAdditional(
+                      serviceProviderId: widget.serviceProviderId,
+                    ),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 12, 150, 0),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                textStyle: const TextStyle(fontSize: 16),
+              ),
+              child: const Text('Approve Packages'),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class PackageCard extends StatelessWidget {
-  final Map<String, dynamic> packageData;
-
-  const PackageCard({
-    Key? key,
-    required this.packageData,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
+  Widget _buildReadOnlyField({required String label, required String value}) {
+    return TextField(
+      controller: TextEditingController(text: value),
+      readOnly: true,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+        filled: true,
+        fillColor: Colors.grey[200],
       ),
-      elevation: 4.0,
-      margin: EdgeInsets.only(bottom: 16.0),
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Service Provider ID: ${packageData['serviceProviderId']}',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Text(
-              'Service Provider Name: ${packageData['serviceProviderName']}',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Text('Payee Name: ${packageData['payeeName']}'),
-            Text('Package Name: ${packageData['packageName']}'),
-            Text('Description: ${packageData['description']}'),
-            Text('Price: ${packageData['price']}'),
-          ],
-        ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
       ),
+      keyboardType: keyboardType,
     );
   }
 }

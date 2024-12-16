@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -13,6 +14,7 @@ class DietaryConsultation extends StatefulWidget {
 }
 
 class _DietaryConsultationState extends State<DietaryConsultation> {
+  final RentApi apiService = RentApi();
   String? _selectedCondition;
   String? _selectedPreference;
   String _mealPlan = "";
@@ -39,9 +41,13 @@ class _DietaryConsultationState extends State<DietaryConsultation> {
     setState(() {
       _loading = true;
     });
+
     try {
-      final url = Uri.parse(
-          "http://192.168.1.4/eldercare/fetch_meal_plan.php?conditions=$_selectedCondition&preference=$_selectedPreference");
+      // Build the URL dynamically using the API service
+      final String apiUrl =
+          '${apiService.mainurl()}/fetch_meal_plan.php?conditions=$_selectedCondition&preference=$_selectedPreference';
+      final Uri url = Uri.parse(apiUrl);
+
       final response = await http.get(url);
 
       if (response.statusCode == 200) {

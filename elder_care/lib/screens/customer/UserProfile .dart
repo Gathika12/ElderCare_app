@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -13,15 +14,12 @@ class UserProfile extends StatefulWidget {
 }
 
 class _UserProfileState extends State<UserProfile> {
-  String fullName = '';
-  String nic = '';
-  String birthday = '';
-  String age = '';
-  String email = '';
-  String gender = '';
-  String mobileNo = '';
-  String bloodGroup = '';
-  String healthIssues = '';
+  final RentApi apiService = RentApi();
+  final _formKey = GlobalKey<FormState>();
+
+  Map<String, TextEditingController> fieldControllers = {};
+  List<String> fieldKeys = [];
+  bool isEditing = false;
 
   @override
   void initState() {
@@ -32,7 +30,9 @@ class _UserProfileState extends State<UserProfile> {
   Future<void> fetchUserProfile() async {
     try {
       final response = await http.get(Uri.parse(
-          'http://10.0.2.2/eldercare/get_user.php?id=${widget.userId}'));
+          '${apiService.mainurl()}/get_user.php?id=${widget.userId}'));
+
+      print('Response body: ${response.body}'); // Log response for debugging
 
       if (response.statusCode == 200) {
         final data = response.body.trim();
@@ -40,20 +40,62 @@ class _UserProfileState extends State<UserProfile> {
         if (data.startsWith('{')) {
           final jsonData = json.decode(data);
 
-          if (jsonData is Map && jsonData.containsKey('full_name')) {
+          if (jsonData is Map) {
             setState(() {
-              fullName = jsonData['full_name'] ?? '';
-              nic = jsonData['nic']?.toString() ?? '';
-              age = jsonData['age']?.toString() ?? '';
-              email = jsonData['email']?.toString() ?? '';
-              bloodGroup = jsonData['blood_group'] ?? '';
-              healthIssues = jsonData['health_issues'] ?? '';
+              fieldKeys = jsonData.keys.map((key) => key.toString()).toList();
+              for (String key in fieldKeys) {
+                fieldControllers[key] = TextEditingController(
+                    text: jsonData[key]?.toString() ?? '');
+              }
             });
           } else {
             print('Error: Invalid JSON structure');
           }
         } else {
           print('Error: Response does not start with "{"');
+        }
+      } else {
+        print('Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<void> updateUserProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    try {
+      final Map<String, String> updatedData = {};
+      for (String key in fieldKeys) {
+        updatedData[key] = fieldControllers[key]?.text ?? '';
+      }
+
+      updatedData['user_id'] = widget.userId; // Ensure user_id is included
+
+      print('Sending POST data: $updatedData'); // Debug POST data
+
+      final response = await http.post(
+        Uri.parse('${apiService.mainurl()}/update_user.php'),
+        body: updatedData,
+      );
+
+      print('Response body: ${response.body}'); // Debug response
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile updated successfully')),
+          );
+          setState(() {
+            isEditing = false; // Exit edit mode
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['error'] ?? 'Update failed')),
+          );
         }
       } else {
         print('Error: ${response.statusCode}');
@@ -75,7 +117,7 @@ class _UserProfileState extends State<UserProfile> {
             child: Center(
               child: QrImageView(
                 data:
-                    'NIC: $nic\nFull Name: $fullName\nUserID: ${widget.userId}',
+                    'UserID: ${widget.userId}\nDetails: ${fieldControllers.map((key, value) => MapEntry(key, value.text))}',
                 version: QrVersions.auto,
                 size: 200.0,
               ),
@@ -97,77 +139,64 @@ class _UserProfileState extends State<UserProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       body: Stack(
         children: [
-          // Main content of the page
           SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Profile Picture
-                Center(
-                  child: CircleAvatar(
-                    radius: 60.0,
-                    backgroundImage: AssetImage('assets/images/profile.jpg'),
-                  ),
-                ),
-                SizedBox(height: 20.0),
-
-                // User Profile Title
-                Text(
-                  'Profile Information',
-                  style: TextStyle(
-                    fontSize: 28.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.teal,
-                  ),
-                ),
-                SizedBox(height: 20.0),
-
-                // Profile Fields
-                ProfileField(label: 'Name', value: fullName),
-                SizedBox(height: 10.0),
-                ProfileField(label: 'NIC', value: nic),
-                SizedBox(height: 10.0),
-                ProfileField(label: 'Age', value: age),
-                SizedBox(height: 10.0),
-                ProfileField(label: 'Email', value: email),
-                SizedBox(height: 10.0),
-                ProfileField(label: 'Blood Group', value: bloodGroup),
-                SizedBox(height: 10.0),
-                ProfileField(label: 'Health Issues', value: healthIssues),
-                SizedBox(height: 30.0),
-
-                // Edit Profile Button
-                ElevatedButton(
-                  onPressed: () {
-                    // Edit action
-                  },
-                  child: Text('Edit Profile'),
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 50.0, vertical: 15.0),
-                    textStyle: TextStyle(fontSize: 18.0),
-                    backgroundColor: Colors.teal,
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(30.0), // Rounded corners
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Profile Information',
+                    style: TextStyle(
+                      fontSize: 28.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 20.0),
+
+                  // Dynamic Profile Fields
+                  for (String key in fieldKeys)
+                    ProfileField(
+                      label: key.replaceAll('_', ' ').toUpperCase(),
+                      controller: fieldControllers[key]!,
+                      isEditing: isEditing,
+                    ),
+                  const SizedBox(height: 30.0),
+
+                  // Edit/Save Button
+                  ElevatedButton(
+                    onPressed: isEditing
+                        ? updateUserProfile
+                        : () => setState(() {
+                              isEditing = true; // Enter edit mode
+                            }),
+                    child: Text(isEditing ? 'Save Profile' : 'Edit Profile'),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 50.0, vertical: 15.0),
+                      textStyle: const TextStyle(fontSize: 18.0),
+                      backgroundColor: isEditing ? Colors.green : Colors.teal,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           Positioned(
             right: 16.0,
             top: 10.0,
             child: IconButton(
-              icon: Icon(Icons.qr_code, size: 40.0, color: Colors.blue),
-              onPressed: () {
-                _showQRCodeDialog();
-              },
+              icon: Icon(Icons.qr_code, size: 45.0, color: Colors.blue),
+              onPressed: _showQRCodeDialog,
               tooltip: 'Show QR Code',
             ),
           ),
@@ -177,17 +206,22 @@ class _UserProfileState extends State<UserProfile> {
   }
 }
 
-// Custom widget for Profile Fields
+// Custom widget for editable Profile Fields
 class ProfileField extends StatelessWidget {
   final String label;
-  final String value;
+  final TextEditingController controller;
+  final bool isEditing;
 
-  ProfileField({required this.label, required this.value});
+  ProfileField({
+    required this.label,
+    required this.controller,
+    required this.isEditing,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 5.0), // Space between fields
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -199,26 +233,23 @@ class ProfileField extends StatelessWidget {
               color: Colors.teal,
             ),
           ),
-          SizedBox(height: 5.0),
-          Container(
-            padding: EdgeInsets.all(12.0),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white, // Change to white for contrast
-              borderRadius: BorderRadius.circular(10.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: Offset(0, 3), // changes position of shadow
-                ),
-              ],
+          const SizedBox(height: 5.0),
+          TextFormField(
+            controller: controller,
+            enabled: isEditing,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
             ),
-            child: Text(
-              value,
-              style: TextStyle(fontSize: 16.0),
-            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return '$label cannot be empty';
+              }
+              return null;
+            },
           ),
         ],
       ),

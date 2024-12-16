@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -22,6 +23,7 @@ class PackageBuy extends StatefulWidget {
 }
 
 class _PackageBuyState extends State<PackageBuy> {
+  final RentApi apiService = RentApi();
   final TextEditingController userIdController = TextEditingController();
   final TextEditingController userNameController = TextEditingController();
   final TextEditingController payeeNameController = TextEditingController();
@@ -46,7 +48,7 @@ class _PackageBuyState extends State<PackageBuy> {
   Future<void> fetchUserProfile() async {
     try {
       final response = await http.get(Uri.parse(
-          'http://10.0.2.2/eldercare/get_user1.php?id=${widget.userId}'));
+          '${apiService.mainurl()}/get_user1.php?id=${widget.userId}'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body.trim());
@@ -68,7 +70,7 @@ class _PackageBuyState extends State<PackageBuy> {
   Future<void> fetchPackageDetails() async {
     try {
       final response = await http.get(Uri.parse(
-          'http://10.0.2.2/eldercare/packages.php?package_name=${widget.packageName}'));
+          '${apiService.mainurl()}/packages.php?package_name=${widget.packageName}'));
 
       if (response.statusCode == 200) {
         setState(() {
@@ -255,7 +257,7 @@ class _PackageBuyState extends State<PackageBuy> {
 
   Future<void> _onPay() async {
     // Create request body
-    var uri = Uri.parse('http://192.168.1.4/eldercare/bill.php');
+    var uri = Uri.parse('${apiService.mainurl()}/bill.php');
     var request = http.MultipartRequest('POST', uri);
 
     // Add fields

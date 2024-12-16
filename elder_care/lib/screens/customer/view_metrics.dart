@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/customer/add_metrics.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -13,6 +14,7 @@ class ViewMetricsScreen extends StatefulWidget {
 }
 
 class _ViewMetricsScreenState extends State<ViewMetricsScreen> {
+  final RentApi apiService = RentApi();
   List<dynamic> _metrics = [];
   double totalWeight = 0;
   double totalSugar = 0;
@@ -23,7 +25,7 @@ class _ViewMetricsScreenState extends State<ViewMetricsScreen> {
   Future<void> fetchMetrics() async {
     final response = await http.get(
       Uri.parse(
-          'http://192.168.1.4/eldercare/get_metrics.php?user_id=${widget.userId}'),
+          'http://gathikacolambage.site/eldercare/get_metrics.php?user_id=${widget.userId}'),
     );
 
     if (response.statusCode == 200) {

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -8,6 +9,7 @@ class AddEventScreen extends StatefulWidget {
 }
 
 class _AddEventScreenState extends State<AddEventScreen> {
+  final RentApi apiService = RentApi();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
@@ -45,11 +47,13 @@ class _AddEventScreenState extends State<AddEventScreen> {
   }
 
   Future<void> _submitEvent() async {
-    const String apiUrl = 'http://10.0.2.2/eldercare/create_event.php';
+    final String apiUrl =
+        Uri.parse('${apiService.mainurl()}/create_event.php').toString();
 
     if (_selectedDate == null || _selectedTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a date and time for the event.')),
+        const SnackBar(
+            content: Text('Please select a date and time for the event.')),
       );
       return;
     }
@@ -83,7 +87,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
         final responseData = jsonDecode(response.body);
         if (responseData['success'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Event created successfully!')),
+            const SnackBar(content: Text('Event created successfully!')),
           );
           _titleController.clear();
           _descriptionController.clear();

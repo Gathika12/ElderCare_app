@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/customer/PackageBuy.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -18,6 +19,7 @@ class PackageDetails extends StatefulWidget {
 }
 
 class _PackageDetailsState extends State<PackageDetails> {
+  final RentApi apiService = RentApi();
   Map<String, dynamic>? packageData;
   bool isLoading = true;
   String packageType = 'package';
@@ -31,7 +33,7 @@ class _PackageDetailsState extends State<PackageDetails> {
   Future<void> _fetchPackageDetails() async {
     try {
       final response = await http.get(Uri.parse(
-          'http://10.0.2.2/eldercare/packages.php?package_name=${widget.packageName}'));
+          '${apiService.mainurl()}/packages.php?package_name=${widget.packageName}'));
 
       print('Response Status Code: ${response.statusCode}');
       print('Response Body: ${response.body}');
@@ -233,8 +235,10 @@ class _PackageDetailsState extends State<PackageDetails> {
                                   builder: (context) => PackageBuy(
                                     userId: widget.userId,
                                     packageName: widget.packageName,
-                                    packagePrice: packageData!['price']
-                                        .toString(), packageType: packageType, // Convert the price to a String
+                                    packagePrice:
+                                        packageData!['price'].toString(),
+                                    packageType:
+                                        packageType, // Convert the price to a String
                                   ),
                                 ),
                               );

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:timeago/timeago.dart' as timeago;
@@ -13,6 +14,7 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
+  final RentApi apiService = RentApi();
   List<Map<String, dynamic>> notifications = [];
 
   @override
@@ -22,8 +24,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   Future<void> fetchNotifications() async {
-    final String apiUrl =
-        'http://10.0.2.2/eldercare/notifications.php?userId=${widget.userId}'; // Replace with your API endpoint
+    final String apiUrl = Uri.parse(
+            '${apiService.mainurl()}/notifications.php?userId=${widget.userId}')
+        .toString(); // Replace with your API endpoint
 
     try {
       final response = await http.get(Uri.parse(apiUrl));

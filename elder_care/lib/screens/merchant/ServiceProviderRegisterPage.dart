@@ -55,7 +55,7 @@ class _ServiceProviderRegisterPageState
       TextEditingController(); // Password controller
 
   Future<void> _registerServiceProvider() async {
-    final String apiUrl = "http://localhost/eldercare/serviceprovider.php";
+    final String apiUrl = "http://10.0.2.2/eldercare/serviceprovider.php";
 
     final Map<String, dynamic> data = {
       'full_name': _fullNameController.text,
