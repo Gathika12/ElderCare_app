@@ -121,8 +121,7 @@ class _BillTableState extends State<BillTable> {
                                           _navigateAndRefresh(
                                             context,
                                             ApprovalPage(
-                                                elderId: bill['elder_id']
-                                                    .toString()),
+                                                elderId: bill['id'].toString()),
                                           );
                                         },
                                       )

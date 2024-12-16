@@ -28,7 +28,7 @@ class _ApprovalPageState extends State<ApprovalPage> {
     try {
       final response = await http.get(
         Uri.parse(
-            '${apiService.mainurl()}/approve_payment.php?elder_id=${widget.elderId}'),
+            '${apiService.mainurl()}/approve_payment.php?id=${widget.elderId}'),
       );
 
       if (response.statusCode == 200) {
@@ -70,24 +70,14 @@ class _ApprovalPageState extends State<ApprovalPage> {
   }
 
   Future<void> approvePayment() async {
-    if (billDetails == null || !billDetails!.containsKey('id')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: Unable to find bill ID to approve.')),
-      );
-      return;
-    }
-
     setState(() {
       isApproving = true;
     });
 
     try {
-      // Convert the ID to a string
-      final String id = billDetails!['id'].toString();
-
       final response = await http.post(
         Uri.parse('${apiService.mainurl()}/approve_payment.php'),
-        body: {'id': id}, // Ensure 'id' is a string
+        body: {'id': widget.elderId},
       );
 
       if (response.statusCode == 200) {
