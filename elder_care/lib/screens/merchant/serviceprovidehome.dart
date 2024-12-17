@@ -4,6 +4,7 @@ import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/merchant/AdditionalPackages.dart';
 import 'package:elder_care/screens/merchant/MedicalViews.dart';
 import 'package:elder_care/screens/merchant/ServiceProvideProfile.dart';
+import 'package:elder_care/screens/merchant/ServiceProviderNotification.dart';
 import 'package:elder_care/screens/merchant/scan_qr.dart';
 import 'package:elder_care/screens/merchant/schedules.dart';
 import 'package:flutter/material.dart';
@@ -123,16 +124,14 @@ class _ServiceProvidePageState extends State<ServiceProvidePage> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ServiceProvideProfile(
-                  serviceProviderId: widget.serviceProviderId,
-                ),
+                builder: (context) => ServiceProviderNotification(),
               ),
             );
           },
           child: CircleAvatar(
             backgroundColor: Color(0xFF0FADAD),
             child: Icon(
-              Icons.person_outline,
+              Icons.notifications_none,
               color: Colors.white,
             ),
           ),
@@ -166,13 +165,7 @@ class _ServiceProvidePageState extends State<ServiceProvidePage> {
                       ),
                     );
                   },
-                  child: CircleAvatar(
-                    backgroundImage: AssetImage('assets/images/profile.jpg'),
-                    backgroundColor: Colors.white,
-                    radius: 30,
-                  ),
                 ),
-                SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

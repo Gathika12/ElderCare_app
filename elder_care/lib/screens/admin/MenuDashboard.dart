@@ -1,3 +1,4 @@
+import 'package:elder_care/screens/admin/AlertDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:elder_care/screens/admin/ServiceProviderControlPage.dart';
 import 'package:elder_care/screens/admin/ViewAdditionalService.dart';
@@ -15,6 +16,19 @@ class MenuDashboard extends StatelessWidget {
         title: const Text('Menu Dashboard'),
         backgroundColor: const Color(0xFF04C2C2), // Header color
         automaticallyImplyLeading: false, // Removes the backward arrow
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notification_add),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AlertDialogInterface(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

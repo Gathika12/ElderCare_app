@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:elder_care/apiservice.dart';
+import 'package:elder_care/screens/admin/special_events_admin.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -126,8 +127,29 @@ class _AddEventScreenState extends State<AddEventScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Event'),
+        title: const Text('Upcoming Events'),
         backgroundColor: Colors.teal,
+        actions: [
+          TextButton(
+            onPressed: () {
+              // Navigate to the desired page
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      EventsScreenAdmin(), // Replace with your destination widget
+                ),
+              );
+            },
+            child: const Text(
+              'Show',
+              style: TextStyle(
+                color: Colors.white, // Ensure text is visible on the AppBar
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

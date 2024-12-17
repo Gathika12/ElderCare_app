@@ -22,6 +22,7 @@ class HelpContactPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        automaticallyImplyLeading: false, // Removes the backward arrow
       ),
       body: SingleChildScrollView(
         child: Column(

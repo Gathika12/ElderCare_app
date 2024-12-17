@@ -4,16 +4,12 @@ import 'package:elder_care/screens/customer/EventDetailsPage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-class EventsScreen extends StatefulWidget {
-  final String userId;
-
-  EventsScreen({Key? key, required this.userId}) : super(key: key);
-
+class EventsScreenAdmin extends StatefulWidget {
   @override
-  _EventsScreenState createState() => _EventsScreenState();
+  _EventsScreenAdminState createState() => _EventsScreenAdminState();
 }
 
-class _EventsScreenState extends State<EventsScreen> {
+class _EventsScreenAdminState extends State<EventsScreenAdmin> {
   final RentApi apiService = RentApi();
   List<Map<String, dynamic>> _events = [];
   bool _isLoading = true;

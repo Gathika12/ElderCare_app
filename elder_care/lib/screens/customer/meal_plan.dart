@@ -20,12 +20,43 @@ class _DietaryConsultationState extends State<DietaryConsultation> {
   String _mealPlan = "";
   bool _loading = false;
 
-  final List<String> _conditions = [
-    "Diabetes",
-    "Hypertension",
-    "Heart Disease"
-  ];
+  List<String> _conditionList = []; // List to hold fetched conditions
   final List<String> _preferences = ["Vegetarian", "Non-Vegetarian", "Vegan"];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchConditions(); // Fetch conditions on page load
+  }
+
+  // Function to fetch conditions from the database
+  Future<void> fetchConditions() async {
+    try {
+      final String apiUrl = '${apiService.mainurl()}/meal_plan_conditions.php';
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          setState(() {
+            // Use a Set to eliminate duplicate conditions
+            _conditionList = List<String>.from(
+                data['data'].map((item) => item['conditions']).toSet());
+          });
+        } else {
+          throw Exception(data['message'] ?? "Failed to load conditions.");
+        }
+      } else {
+        throw Exception(
+            "Failed to fetch conditions. HTTP Status: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching conditions: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error loading conditions: $e")),
+      );
+    }
+  }
 
   Future<bool> requestManageExternalStoragePermission() async {
     if (await Permission.manageExternalStorage.request().isGranted) {
@@ -40,10 +71,10 @@ class _DietaryConsultationState extends State<DietaryConsultation> {
   Future<void> fetchMealPlan() async {
     setState(() {
       _loading = true;
+      _mealPlan = ""; // Clear previous meal plan
     });
 
     try {
-      // Build the URL dynamically using the API service
       final String apiUrl =
           '${apiService.mainurl()}/fetch_meal_plan.php?conditions=$_selectedCondition&preference=$_selectedPreference';
       final Uri url = Uri.parse(apiUrl);
@@ -51,21 +82,26 @@ class _DietaryConsultationState extends State<DietaryConsultation> {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        try {
-          final data = json.decode(response.body);
+        final data = json.decode(response.body);
+
+        if (data['status'] == 'success' && data['meal_plan'] != null) {
+          final Map<String, dynamic> mealPlanMap = data['meal_plan'];
+
+          // Format the meal plan data into a readable string
           setState(() {
-            _mealPlan = data['meal_plan'];
+            _mealPlan = mealPlanMap.entries.map((entry) {
+              return "${entry.key}: ${entry.value}";
+            }).join("\n\n"); // Each meal part separated with a line break
           });
-        } catch (e) {
-          print("Error parsing JSON: $e");
+        } else {
           setState(() {
-            _mealPlan = "Error parsing the meal plan data.";
+            _mealPlan = "No meal plan found for the selected options.";
           });
         }
       } else {
-        print("HTTP error: ${response.statusCode}, Body: ${response.body}");
         setState(() {
-          _mealPlan = "Failed to fetch meal plan (HTTP Error).";
+          _mealPlan =
+              "Failed to fetch meal plan (HTTP ${response.statusCode}).";
         });
       }
     } catch (e) {
@@ -108,96 +144,52 @@ class _DietaryConsultationState extends State<DietaryConsultation> {
         build: (pw.Context context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text(
-              "Dietary Consultation",
-              style: pw.TextStyle(fontSize: 28, fontWeight: pw.FontWeight.bold),
-            ),
+            pw.Text("Dietary Consultation",
+                style:
+                    pw.TextStyle(fontSize: 28, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 24),
-            pw.Text(
-              "Condition:",
-              style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
-            ),
-            pw.Text(
-              _selectedCondition ?? "Not Specified",
-              style: pw.TextStyle(fontSize: 16),
-            ),
+            pw.Text("Condition:",
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.Text(_selectedCondition ?? "Not Specified",
+                style: pw.TextStyle(fontSize: 16)),
             pw.SizedBox(height: 16),
-            pw.Text(
-              "Preference:",
-              style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
-            ),
-            pw.Text(
-              _selectedPreference ?? "Not Specified",
-              style: pw.TextStyle(fontSize: 16),
-            ),
+            pw.Text("Preference:",
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.Text(_selectedPreference ?? "Not Specified",
+                style: pw.TextStyle(fontSize: 16)),
             pw.SizedBox(height: 24),
-            pw.Text(
-              "Meal Plan:",
-              style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
-            ),
+            pw.Text("Meal Plan:",
+                style:
+                    pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
-            pw.Text(
-              "Breakfast:",
-              style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-            ),
-            pw.Text(
-              "Smoothie with spinach, banana, and almond milk.",
-              style: pw.TextStyle(fontSize: 14),
-            ),
-            pw.SizedBox(height: 10),
-            pw.Text(
-              "Lunch:",
-              style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-            ),
-            pw.Text(
-              "Grilled tofu with brown rice.",
-              style: pw.TextStyle(fontSize: 14),
-            ),
-            pw.SizedBox(height: 10),
-            pw.Text(
-              "Dinner:",
-              style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-            ),
-            pw.Text(
-              "Vegetable stir-fry with soba noodles.",
-              style: pw.TextStyle(fontSize: 14),
-            ),
+            pw.Text(_mealPlan, style: pw.TextStyle(fontSize: 14)),
           ],
         ),
       ),
     );
 
     try {
-      // Request Manage External Storage Permission
       if (await requestManageExternalStoragePermission()) {
-        // Use the Downloads directory directly
         final directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          await directory.create(recursive: true);
-        }
+        if (!await directory.exists()) await directory.create(recursive: true);
 
         final filePath =
             "${directory.path}/meal_plan_${DateTime.now().millisecondsSinceEpoch}.pdf";
         final file = File(filePath);
 
-        // Write the PDF file
         await file.writeAsBytes(await pdf.save());
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Meal Plan saved to $filePath")),
         );
         print("PDF saved to $filePath");
-      } else {
-        print("Storage permission not granted.");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Storage permission not granted.")),
-        );
       }
     } catch (e) {
       print("Error saving PDF: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to save PDF.")),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Failed to save PDF.")));
     }
   }
 
@@ -212,6 +204,7 @@ class _DietaryConsultationState extends State<DietaryConsultation> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Updated DropdownButtonFormField for Conditions
             DropdownButtonFormField(
               hint: Text("Select Condition"),
               value: _selectedCondition,
@@ -220,10 +213,10 @@ class _DietaryConsultationState extends State<DietaryConsultation> {
                   _selectedCondition = value as String;
                 });
               },
-              items: _conditions
+              items: _conditionList
                   .map((condition) => DropdownMenuItem(
-                        child: Text(condition),
                         value: condition,
+                        child: Text(condition),
                       ))
                   .toList(),
               decoration: InputDecoration(
@@ -265,69 +258,42 @@ class _DietaryConsultationState extends State<DietaryConsultation> {
             SizedBox(height: 16),
             if (_mealPlan.isNotEmpty)
               Expanded(
-                child: Card(
-                  elevation: 4,
-                  margin: EdgeInsets.symmetric(vertical: 10),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          "Your Meal Plan",
-                          style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 10),
-                        Divider(),
-                        Text(
-                          "Breakfast:",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          "Smoothie with spinach, banana, and almond milk.",
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey[800]),
-                        ),
-                        SizedBox(height: 15),
-                        Text(
-                          "Lunch:",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          "Grilled tofu with brown rice.",
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey[800]),
-                        ),
-                        SizedBox(height: 15),
-                        Text(
-                          "Dinner:",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          "Vegetable stir-fry with soba noodles.",
-                          style:
-                              TextStyle(fontSize: 16, color: Colors.grey[800]),
-                        ),
-                        Spacer(),
-                        ElevatedButton.icon(
-                          onPressed: generatePdf, // Add PDF generation here
-                          icon: Icon(Icons.download),
-                          label: Text("Download PDF"),
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: EdgeInsets.symmetric(vertical: 15),
+                child: SingleChildScrollView(
+                  child: Card(
+                    elevation: 4,
+                    margin: EdgeInsets.symmetric(vertical: 10),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            "Your Meal Plan",
+                            style: TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.bold),
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 10),
+                          Divider(),
+                          Text(
+                            _mealPlan, // Display dynamically formatted meal plan
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey[800]),
+                          ),
+                          SizedBox(height: 20),
+                          ElevatedButton.icon(
+                            onPressed:
+                                generatePdf, // Generate PDF with dynamic content
+                            icon: Icon(Icons.download),
+                            label: Text("Download PDF"),
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 15),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
