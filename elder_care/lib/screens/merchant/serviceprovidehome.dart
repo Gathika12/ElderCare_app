@@ -5,6 +5,7 @@ import 'package:elder_care/screens/merchant/AdditionalPackages.dart';
 import 'package:elder_care/screens/merchant/MedicalViews.dart';
 import 'package:elder_care/screens/merchant/ServiceProvideProfile.dart';
 import 'package:elder_care/screens/merchant/scan_qr.dart';
+import 'package:elder_care/screens/merchant/schedules.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -250,12 +251,15 @@ class _ServiceProvidePageState extends State<ServiceProvidePage> {
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
       children: [
-        _shortcutCard(Icons.medical_services, "Packages", () {
+        _shortcutCard(Icons.schedule, "Appointment", () {
           print(
               "Navigating to Medical Views with Service Provider ID: ${widget.serviceProviderId}");
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => MedicalViews()),
+            MaterialPageRoute(
+                builder: (context) => MedicalViews(
+                      serviceProviderId: widget.serviceProviderId,
+                    )),
           );
         }),
         _shortcutCard(Icons.qr_code, "QR Scanner", () {
@@ -278,9 +282,14 @@ class _ServiceProvidePageState extends State<ServiceProvidePage> {
                     )),
           );
         }),
-        _shortcutCard(Icons.payment, "Payments", () {
-          print(
-              "Navigating to Payments with Service Provider ID: ${widget.serviceProviderId}");
+        _shortcutCard(Icons.pending_outlined, "Upcoming Appointments", () {
+          print(Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => AppointmentsPage(
+                      doctorId: widget.serviceProviderId,
+                    )),
+          ));
           // Add navigation to payments page here
         }),
       ],

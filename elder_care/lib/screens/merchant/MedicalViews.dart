@@ -4,6 +4,12 @@ import 'package:http/http.dart' as http;
 import 'package:elder_care/screens/merchant/ApproveMedicals.dart';
 
 class MedicalViews extends StatefulWidget {
+  final String serviceProviderId;
+
+  MedicalViews({
+    required this.serviceProviderId,
+  });
+
   @override
   _MedicalViewsState createState() => _MedicalViewsState();
 }
@@ -12,7 +18,15 @@ class _MedicalViewsState extends State<MedicalViews> {
   late Future<List<dynamic>> _medicalData;
 
   // API URL
-  final String apiUrl = "http://10.0.2.2/eldercare/ViewMedicals.php";
+  late final String apiUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    apiUrl =
+        "http://10.0.2.2/eldercare/ViewMedicals.php?doctor_id=${widget.serviceProviderId}";
+    _fetchMedicalData();
+  }
 
   // Fetch data from the API
   Future<List<dynamic>> fetchMedicalData() async {
@@ -40,10 +54,10 @@ class _MedicalViewsState extends State<MedicalViews> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _medicalData = fetchMedicalData();
+  void _fetchMedicalData() {
+    setState(() {
+      _medicalData = fetchMedicalData();
+    });
   }
 
   @override
@@ -56,7 +70,7 @@ class _MedicalViewsState extends State<MedicalViews> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Navigate back
+            Navigator.pop(context);
           },
         ),
       ),
@@ -135,14 +149,19 @@ class _MedicalViewsState extends State<MedicalViews> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
+                            onPressed: () async {
+                              final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
                                       ApproveMedicals(medicalData: item),
                                 ),
                               );
+
+                              if (result == true) {
+                                // Refresh data after approving
+                                _fetchMedicalData();
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.teal,
@@ -154,7 +173,8 @@ class _MedicalViewsState extends State<MedicalViews> {
                             ),
                             child: Text(
                               "Approve",
-                              style: TextStyle(fontSize: 14),
+                              style:
+                                  TextStyle(fontSize: 14, color: Colors.white),
                             ),
                           ),
                         ),

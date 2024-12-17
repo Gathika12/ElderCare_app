@@ -1,23 +1,52 @@
 import 'dart:convert';
-
+import 'package:elder_care/apiservice.dart';
+import 'package:elder_care/screens/customer/approved_checkup.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 
 class NearestDoctorsPage extends StatefulWidget {
   final String userId;
 
   NearestDoctorsPage({Key? key, required this.userId}) : super(key: key);
+
   @override
   _NearestDoctorsPageState createState() => _NearestDoctorsPageState();
 }
 
 class _NearestDoctorsPageState extends State<NearestDoctorsPage> {
+  final RentApi apiService = RentApi();
   List<dynamic> _doctors = [];
+  List<dynamic> _filteredDoctors = [];
+  List<String> _districts = [
+    'Colombo',
+    'Gampaha',
+    'Kalutara',
+    'Kandy',
+    'Matale',
+    'Nuwara Eliya',
+    'Galle',
+    'Matara',
+    'Hambantota',
+    'Jaffna',
+    'Kilinochchi',
+    'Mannar',
+    'Vavuniya',
+    'Mullaitivu',
+    'Batticaloa',
+    'Ampara',
+    'Trincomalee',
+    'Kurunegala',
+    'Puttalam',
+    'Anuradhapura',
+    'Polonnaruwa',
+    'Badulla',
+    'Monaragala',
+    'Ratnapura',
+    'Kegalle'
+  ];
+  String _searchQuery = '';
   bool _isLoading = true;
   String _errorMessage = '';
-  String _currentCity = 'Unknown';
 
   final String apiUrl = 'http://192.168.1.4/eldercare/get_doctor.php';
   final String saveCheckupApi = 'http://192.168.1.4/eldercare/user_checkup.php';
@@ -25,100 +54,30 @@ class _NearestDoctorsPageState extends State<NearestDoctorsPage> {
   @override
   void initState() {
     super.initState();
-    _getUserLocationAndFetchDoctors();
+    _fetchDoctors();
   }
 
-  Future<void> _getUserLocationAndFetchDoctors() async {
+  Future<void> _fetchDoctors() async {
     try {
-      Position position = await _determinePosition();
-      await _getCityName(position.latitude, position.longitude);
-      await _fetchNearbyDoctors(position.latitude, position.longitude);
-    } catch (error) {
-      setState(() {
-        _errorMessage = 'Failed to get location: $error';
-        print('error: $error');
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<Position> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw 'Location services are disabled.';
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        throw 'Location permissions are denied';
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      throw 'Location permissions are permanently denied.';
-    }
-
-    Position position = await Geolocator.getCurrentPosition();
-
-    print(
-        'Current Location: Latitude: ${position.latitude}, Longitude: ${position.longitude}');
-    return position;
-  }
-
-  Future<void> _getCityName(double latitude, double longitude) async {
-    try {
-      List<Placemark> placemarks =
-          await placemarkFromCoordinates(latitude, longitude);
-
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
-        setState(() {
-          _currentCity = place.locality ?? 'Unknown';
-        });
-        print('Current City: $_currentCity');
-      } else {
-        setState(() {
-          _currentCity = 'Unknown';
-        });
-        print('No placemark data found for the coordinates.');
-      }
-    } catch (e) {
-      setState(() {
-        _currentCity = 'Unknown';
-      });
-      print('Failed to get city name: $e');
-    }
-  }
-
-  Future<void> _fetchNearbyDoctors(double latitude, double longitude) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$apiUrl?latitude=$latitude&longitude=$longitude'),
-      );
+      final response = await http.get(Uri.parse(apiUrl));
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
 
         if (responseData is List) {
           setState(() {
-            _doctors = responseData
-                .where((doctor) => doctor.containsKey('id'))
-                .map((doctor) {
+            _doctors = responseData.map((doctor) {
               return {
-                'id': doctor['id'], // Doctor ID
-                'full_name': doctor['full_name'] ?? 'No Name', // Doctor Name
-                'specialty': doctor['specialty'] ??
-                    'Unknown Specialty', // Doctor Specialty
-                'distance': doctor['distance'] ?? 0, // Distance
+                'id': doctor['id'],
+                'full_name': doctor['full_name'] ?? 'No Name',
+                'specialty': doctor['specialty'] ?? 'Unknown Specialty',
+                'area': doctor['area'] ?? 'Unknown Area',
+                'distance': doctor['distance'] ?? 0,
               };
             }).toList();
+            _filteredDoctors = _doctors;
+            _isLoading = false;
           });
-          _isLoading = false;
         } else {
           setState(() {
             _errorMessage = 'Unexpected response format.';
@@ -134,18 +93,27 @@ class _NearestDoctorsPageState extends State<NearestDoctorsPage> {
       }
     } catch (error) {
       setState(() {
-        _errorMessage = 'An error occurred while fetching doctors: $error';
+        _errorMessage = 'An error occurred: $error';
         _isLoading = false;
       });
       print('Error: $error');
     }
   }
 
+  void _filterDoctors(String query) {
+    setState(() {
+      _searchQuery = query;
+      _filteredDoctors = _doctors
+          .where((doctor) => doctor['area']
+              .toString()
+              .toLowerCase()
+              .contains(query.toLowerCase()))
+          .toList();
+    });
+  }
+
   Future<void> _saveCheckup(String doctorId, String userRemark) async {
     try {
-      print(
-          "Sending Data: doctor_id=$doctorId, user_id=${widget.userId}, user_remark=$userRemark");
-
       final response = await http.post(
         Uri.parse(saveCheckupApi),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -157,13 +125,7 @@ class _NearestDoctorsPageState extends State<NearestDoctorsPage> {
       );
 
       if (response.statusCode == 200) {
-        String responseBody = response.body.trim();
-        if (responseBody.startsWith('Connected')) {
-          responseBody = responseBody.replaceFirst('Connected', '').trim();
-        }
-
-        final data = jsonDecode(responseBody);
-
+        final data = jsonDecode(response.body);
         if (data['status'] == 'success') {
           _showDialog('Success', 'Your checkup request has been saved.');
         } else {
@@ -176,26 +138,6 @@ class _NearestDoctorsPageState extends State<NearestDoctorsPage> {
       _showDialog('Error', 'An unexpected error occurred: $e');
       print('Error: $e');
     }
-  }
-
-  void _showDialog(String title, String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   void _showRemarkPopup(String doctorId) {
@@ -238,45 +180,94 @@ class _NearestDoctorsPageState extends State<NearestDoctorsPage> {
     );
   }
 
+  void _showDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Nearest Doctors - $_currentCity'),
+        title: Text('Nearest Doctors'),
         backgroundColor: Colors.teal,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      ApprovedCheckupsPage(userId: widget.userId),
+                ),
+              );
+            },
+            child: Text(
+              'Your Checkups',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+          ),
+        ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _errorMessage.isNotEmpty
               ? Center(child: Text(_errorMessage))
               : Column(
                   children: [
+                    // Search Bar with Autocomplete
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12.0),
-                        decoration: BoxDecoration(
-                          color: Colors.teal.withOpacity(0.1),
-                          border: Border.all(color: Colors.black, width: 1.5),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: Text(
-                          'Choose a Doctor for your Medical Checkup',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.teal,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      padding: const EdgeInsets.all(12.0),
+                      child: Autocomplete<String>(
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          if (textEditingValue.text.isEmpty) {
+                            return const Iterable<String>.empty();
+                          }
+                          return _districts.where((district) => district
+                              .toLowerCase()
+                              .contains(textEditingValue.text.toLowerCase()));
+                        },
+                        onSelected: (String selection) {
+                          _filterDoctors(selection);
+                        },
+                        fieldViewBuilder: (context, controller, focusNode,
+                            onEditingComplete) {
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            onEditingComplete: onEditingComplete,
+                            onChanged: (value) => _filterDoctors(value),
+                            decoration: InputDecoration(
+                              labelText: 'Search by Area',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              prefixIcon: Icon(Icons.search),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     Expanded(
                       child: ListView.builder(
-                        itemCount: _doctors.length,
+                        itemCount: _filteredDoctors.length,
                         itemBuilder: (context, index) {
-                          final doctor = _doctors[index];
+                          final doctor = _filteredDoctors[index];
                           return Card(
                             margin: const EdgeInsets.symmetric(
                                 vertical: 8.0, horizontal: 16.0),
@@ -284,18 +275,14 @@ class _NearestDoctorsPageState extends State<NearestDoctorsPage> {
                               leading: Icon(Icons.local_hospital,
                                   color: Colors.teal),
                               title: Text(
-                                'Dr. ${doctor['full_name'] ?? 'No Name'}',
+                                'Dr. ${doctor['full_name']}',
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                               subtitle: Text(
-                                '${doctor['specialty'] ?? 'Unknown Specialty'} • ${doctor['distance']} km away',
+                                '${doctor['specialty']} • Area: ${doctor['area']}',
                               ),
                               onTap: () {
-                                if (doctor['id'] != null) {
-                                  _showRemarkPopup(doctor['id'].toString());
-                                } else {
-                                  _showDialog('Error', 'Doctor ID not found.');
-                                }
+                                _showRemarkPopup(doctor['id'].toString());
                               },
                             ),
                           );

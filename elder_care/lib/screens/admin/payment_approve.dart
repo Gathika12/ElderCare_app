@@ -34,37 +34,28 @@ class _ApprovalPageState extends State<ApprovalPage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        if (data is List<dynamic>) {
-          setState(() {
+        setState(() {
+          if (data is List<dynamic>) {
             billDetails = data.isNotEmpty ? data[0] : null;
-            isLoading = false;
-          });
-        } else if (data is Map<String, dynamic>) {
-          setState(() {
+          } else if (data is Map<String, dynamic>) {
             billDetails = data;
-            isLoading = false;
-          });
-        } else {
-          throw Exception('Unexpected response format');
-        }
+          }
+          isLoading = false;
+        });
       } else {
         setState(() {
           isLoading = false;
         });
-        final errorMessage =
-            'Failed to fetch bill details: ${response.statusCode}';
-        print(errorMessage);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)),
+          SnackBar(content: Text('Failed to fetch bill details')),
         );
       }
     } catch (error) {
       setState(() {
         isLoading = false;
       });
-      print('Error fetching bill details: $error');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching bill details: $error')),
+        SnackBar(content: Text('Error: $error')),
       );
     }
   }
@@ -83,33 +74,23 @@ class _ApprovalPageState extends State<ApprovalPage> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         if (responseBody['status'] == 'success') {
-          print('Payment approved successfully!');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Payment approved successfully!')),
           );
-
-          // Navigate back with result to indicate success
           Navigator.pop(context, true);
         } else {
-          final errorMessage =
-              'Failed to approve payment: ${responseBody['message']}';
-          print(errorMessage);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMessage)),
+            SnackBar(content: Text('Error: ${responseBody['message']}')),
           );
         }
       } else {
-        final errorMessage =
-            'Failed to approve payment: ${response.statusCode}';
-        print(errorMessage);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)),
+          SnackBar(content: Text('Failed to approve payment')),
         );
       }
     } catch (error) {
-      print('Error approving payment: $error');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error approving payment: $error')),
+        SnackBar(content: Text('Error: $error')),
       );
     } finally {
       setState(() {
@@ -129,69 +110,66 @@ class _ApprovalPageState extends State<ApprovalPage> {
           ? Center(child: CircularProgressIndicator())
           : billDetails == null
               ? Center(child: Text('No bill details found'))
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.person, color: Colors.teal, size: 30),
-                              SizedBox(width: 10),
-                              Text(
-                                'Elder ID: ${billDetails!['elder_id']}',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
+              : Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Bill Details',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.teal[800],
                               ),
-                            ],
-                          ),
-                          SizedBox(height: 20),
-                          _buildDetailRow(
-                            label: 'Payment Type',
-                            value: billDetails!['payment_type'],
-                          ),
-                          _buildDetailRow(
-                            label: 'Service',
-                            value: billDetails!['service'],
-                          ),
-                          _buildDetailRow(
-                            label: 'Amount',
-                            value: '\$${billDetails!['amount']}',
-                          ),
-                          _buildDetailRow(
-                            label: 'Paid By',
-                            value: billDetails!['paidby'],
-                          ),
-                          _buildDetailRow(
-                            label: 'Date',
-                            value: billDetails!['date'],
-                          ),
-                          SizedBox(height: 30),
-                          isApproving
-                              ? Center(child: CircularProgressIndicator())
-                              : ElevatedButton.icon(
-                                  onPressed: approvePayment,
-                                  icon: Icon(Icons.check),
-                                  label: Text('Approve Payment'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.teal,
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 30, vertical: 15),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 20),
+                            Divider(),
+                            _buildDetailRow(
+                                label: 'Elder ID',
+                                value: billDetails!['elder_id']),
+                            _buildDetailRow(
+                                label: 'Payment Type',
+                                value: billDetails!['payment_type']),
+                            _buildDetailRow(
+                                label: 'Service',
+                                value: billDetails!['service']),
+                            _buildDetailRow(
+                                label: 'Amount',
+                                value: '\$${billDetails!['amount']}'),
+                            _buildDetailRow(
+                                label: 'Paid By',
+                                value: billDetails!['paidby']),
+                            _buildDetailRow(
+                                label: 'Date', value: billDetails!['date']),
+                            SizedBox(height: 30),
+                            isApproving
+                                ? Center(child: CircularProgressIndicator())
+                                : ElevatedButton.icon(
+                                    onPressed: approvePayment,
+                                    icon: Icon(Icons.check_circle_outline),
+                                    label: Text('Approve Payment'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.teal,
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 30, vertical: 15),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     ),
                                   ),
-                                ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -199,26 +177,23 @@ class _ApprovalPageState extends State<ApprovalPage> {
     );
   }
 
-  Widget _buildDetailRow({required String label, required String value}) {
+  Widget _buildDetailRow({required String label, required dynamic value}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             '$label: ',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
-              color: Colors.grey[800],
+              color: Colors.teal[700],
             ),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-              softWrap: true,
-            ),
+          Text(
+            value?.toString() ?? 'N/A',
+            style: TextStyle(fontSize: 16, color: Colors.grey[800]),
           ),
         ],
       ),

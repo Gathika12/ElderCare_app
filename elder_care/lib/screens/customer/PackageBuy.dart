@@ -255,38 +255,73 @@ class _PackageBuyState extends State<PackageBuy> {
     );
   }
 
+  Future<void> _pickFile() async {
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+      preferredCameraDevice: CameraDevice.rear,
+    );
+
+    if (pickedFile != null) {
+      final file = File(pickedFile.path);
+
+      // Check if file is an image or PDF
+      if (file.path.endsWith('.pdf') ||
+          file.path.endsWith('.jpg') ||
+          file.path.endsWith('.png')) {
+        setState(() {
+          slipImage = file;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Only PDF or Image files are allowed.')),
+        );
+      }
+    }
+  }
+
   Future<void> _onPay() async {
-    // Create request body
     var uri = Uri.parse('${apiService.mainurl()}/bill.php');
     var request = http.MultipartRequest('POST', uri);
 
-    // Add fields
+    // Add form fields
     request.fields['elder_id'] = userIdController.text;
     request.fields['payment_type'] = widget.packageType;
     request.fields['service'] = packageNameController.text;
     request.fields['amount'] = widget.packagePrice;
     request.fields['paidby'] = payeeNameController.text;
 
-    // Add slip image only if provided
+    // Attach the file only if provided
     if (slipImage != null) {
-      var slip = await http.MultipartFile.fromPath('slip', slipImage!.path);
-      request.files.add(slip);
-    } else {
-      request.fields['slip'] = '0'; // Default value if no slip is provided
+      String fileName = slipImage!.path.split('/').last;
+      request.files.add(await http.MultipartFile.fromPath(
+        'slip',
+        slipImage!.path,
+        filename: fileName,
+      ));
     }
 
-    // Send request
     try {
       var response = await request.send();
-      if (response.statusCode == 200) {
-        final responseBody = await response.stream.bytesToString();
+
+      // Print status code and response for debugging
+      print('Status Code: ${response.statusCode}');
+      final responseBody = await response.stream.bytesToString();
+      print('Response Body: $responseBody');
+
+      final jsonResponse = json.decode(responseBody);
+
+      if (jsonResponse['status'] == 'success') {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Payment successful: $responseBody')),
+          SnackBar(
+              content: Text('Payment successful: ${jsonResponse['message']}')),
+        );
+      } else if (jsonResponse['status'] == 'error') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${jsonResponse['message']}')),
         );
       } else {
-        final responseBody = await response.stream.bytesToString();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Payment failed: $responseBody')),
+          SnackBar(content: Text('Unexpected response: $responseBody')),
         );
       }
     } catch (e) {

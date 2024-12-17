@@ -28,10 +28,6 @@ class CustomBottomNavigationBar extends StatelessWidget {
         );
         break;
       case 1:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MedicalViews()),
-        );
         break;
       case 2:
         Navigator.pushReplacement(
