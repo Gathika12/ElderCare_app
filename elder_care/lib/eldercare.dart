@@ -1,5 +1,8 @@
+import 'package:elder_care/screens/admin/ServiceProviderControlPage.dart';
 import 'package:elder_care/screens/customer/UserAdditional.dart';
 import 'package:elder_care/screens/customer/UserProfile%20.dart';
+import 'package:elder_care/screens/customer/contact1.dart';
+import 'package:elder_care/screens/customer/my_services.dart';
 import 'package:elder_care/screens/merchant/ViewproviderAdditional.dart';
 import 'package:elder_care/screens/customer/contact.dart';
 import 'package:elder_care/screens/customer/homepage.dart';
@@ -41,7 +44,9 @@ class _MainBottomNavState extends State<MainBottomNav> {
       NotificationScreen(
         userId: widget.userId,
       ),
-      HelpContactPage(),
+      HelpContactPage1(
+        userId: widget.userId,
+      ),
       UserProfile(userId: widget.userId), // Access email from widget
     ];
   }
@@ -51,7 +56,7 @@ class _MainBottomNavState extends State<MainBottomNav> {
     'Dashboard',
     'Packages',
     'Reminders',
-    'Services',
+    'Contact Us',
     'Profile',
   ];
 
@@ -149,6 +154,19 @@ class _MainBottomNavState extends State<MainBottomNav> {
               },
             ),
             ListTile(
+              leading: Icon(Icons.approval),
+              title: Text('My Services'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => MyServices(
+                            userId: widget.userId,
+                          )),
+                );
+              },
+            ),
+            ListTile(
               leading: Icon(Icons.health_and_safety),
               title: Text('Health Monitoring'),
               onTap: () {
@@ -166,7 +184,7 @@ class _MainBottomNavState extends State<MainBottomNav> {
             ),
             ListTile(
               leading: Icon(Icons.local_hospital),
-              title: Text('Services'),
+              title: Text('Contact US'),
               onTap: () {
                 _onItemTapped(3);
                 Navigator.pop(context);
@@ -182,17 +200,15 @@ class _MainBottomNavState extends State<MainBottomNav> {
             ),
             const Divider(),
             ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
-              onTap: () {},
-            ),
-            ListTile(
               leading: Icon(Icons.help),
               title: Text('Help'),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => HelpContactPage()),
+                  MaterialPageRoute(
+                      builder: (context) => HelpContactPage1(
+                            userId: widget.userId,
+                          )),
                 );
               },
             ),

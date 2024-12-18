@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:elder_care/screens/merchant/MedicalViews.dart';
-import 'package:elder_care/screens/merchant/scan_qr.dart';
 import 'package:elder_care/screens/merchant/serviceprovidehome.dart';
-import 'package:elder_care/screens/customer/contact.dart';
+import 'package:flutter/material.dart';
+import 'package:elder_care/screens/merchant/scan_qr.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:elder_care/apiservice.dart';
+import 'package:elder_care/screens/admin/view_approved_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -25,8 +26,8 @@ class _ViewAdditionalServiceState extends State<ViewAdditionalService> {
 
   Future<void> fetchServices() async {
     try {
-      final response = await http
-          .get(Uri.parse('${apiService.mainurl()}/viewpackagedetails.php'));
+      final response = await http.get(
+          Uri.parse('${apiService.mainurl()}/view_notapprove_additional.php'));
 
       if (response.statusCode == 200) {
         // Clean the response by removing the invalid "Connected" text
@@ -40,7 +41,7 @@ class _ViewAdditionalServiceState extends State<ViewAdditionalService> {
 
         if (jsonResponse is List) {
           setState(() {
-            services = jsonResponse; // Update the state with the services
+            services = jsonResponse.reversed.toList(); // Reverse the list
             isLoading = false; // Data loaded, stop loading indicator
           });
         } else {
@@ -59,7 +60,7 @@ class _ViewAdditionalServiceState extends State<ViewAdditionalService> {
   }
 
   // Function to handle "Approve" button press and send POST request
-  Future<void> approveService(int? serviceId) async {
+  Future<void> approveService(int? serviceId, int index) async {
     if (serviceId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Service ID is null. Cannot approve.')),
@@ -89,6 +90,11 @@ class _ViewAdditionalServiceState extends State<ViewAdditionalService> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(jsonResponse['message'])),
         );
+
+        // Remove the approved service from the list and update the state
+        setState(() {
+          services.removeAt(index); // Remove the item at the given index
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(jsonResponse['message'])),
@@ -108,6 +114,26 @@ class _ViewAdditionalServiceState extends State<ViewAdditionalService> {
       appBar: AppBar(
         title: const Text('Additional Services'),
         backgroundColor: const Color(0xFF04C2C2), // Header color
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      ViewApprovedService(), // Replace with your actual widget
+                ),
+              );
+            },
+            child: const Text(
+              'Approved Services',
+              style: TextStyle(
+                color: Colors.white, // Text color
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(
@@ -146,7 +172,7 @@ class _ViewAdditionalServiceState extends State<ViewAdditionalService> {
                                 width: 8.0), // Space between price and button
                             ElevatedButton(
                               onPressed: () => approveService(
-                                  serviceId), // Pass serviceId as int
+                                  serviceId, index), // Pass serviceId and index
                               child: const Text('Approve'),
                               style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,

@@ -1,8 +1,15 @@
+import 'dart:ui';
+
 import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:qr_flutter/qr_flutter.dart'; // Import the QR code package
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'dart:typed_data';
+import 'package:flutter/services.dart';
 
 class UserProfile extends StatefulWidget {
   final String userId;
@@ -20,6 +27,7 @@ class _UserProfileState extends State<UserProfile> {
   Map<String, TextEditingController> fieldControllers = {};
   List<String> fieldKeys = [];
   bool isEditing = false;
+  DateTime? _selectedBirthday; // To store the selected birthday
 
   @override
   void initState() {
@@ -47,6 +55,12 @@ class _UserProfileState extends State<UserProfile> {
                 fieldControllers[key] = TextEditingController(
                     text: jsonData[key]?.toString() ?? '');
               }
+
+              // Initialize the selected birthday
+              if (jsonData.containsKey('birthday') &&
+                  jsonData['birthday'].isNotEmpty) {
+                _selectedBirthday = DateTime.tryParse(jsonData['birthday']);
+              }
             });
           } else {
             print('Error: Invalid JSON structure');
@@ -71,16 +85,25 @@ class _UserProfileState extends State<UserProfile> {
         updatedData[key] = fieldControllers[key]?.text ?? '';
       }
 
-      updatedData['user_id'] = widget.userId; // Ensure user_id is included
+      // Add formatted birthday to updated data
+      if (_selectedBirthday != null) {
+        updatedData['birthday'] =
+            "${_selectedBirthday!.year}-${_selectedBirthday!.month.toString().padLeft(2, '0')}-${_selectedBirthday!.day.toString().padLeft(2, '0')}";
+      }
 
-      print('Sending POST data: $updatedData'); // Debug POST data
+      updatedData['id'] = widget.userId; // Ensure 'id' is included
+
+      print('Sending JSON POST data: ${json.encode(updatedData)}');
 
       final response = await http.post(
         Uri.parse('${apiService.mainurl()}/update_user.php'),
-        body: updatedData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(updatedData),
       );
 
-      print('Response body: ${response.body}'); // Debug response
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -103,6 +126,37 @@ class _UserProfileState extends State<UserProfile> {
     } catch (e) {
       print('Error: $e');
     }
+  }
+
+  Future<void> _generateQRCodePDF() async {
+    final pdf = pw.Document();
+
+    // Convert QR code data to an image
+    final qrCode = await QrPainter(
+      data:
+          'UserID: ${widget.userId}\nDetails: ${fieldControllers.map((key, value) => MapEntry(key, value.text))}',
+      version: QrVersions.auto,
+      gapless: false,
+      color: Colors.black,
+    ).toImage(200);
+
+    final qrBytes = await qrCode.toByteData(format: ImageByteFormat.png);
+
+    pdf.addPage(
+      pw.Page(
+        build: (context) => pw.Center(
+          child: pw.Image(
+            pw.MemoryImage(qrBytes!.buffer.asUint8List()),
+          ),
+        ),
+      ),
+    );
+
+    // Trigger PDF download
+    await Printing.sharePdf(
+      bytes: await pdf.save(),
+      filename: 'qr_code.pdf',
+    );
   }
 
   void _showQRCodeDialog() {
@@ -130,10 +184,30 @@ class _UserProfileState extends State<UserProfile> {
               },
               child: Text('Close'),
             ),
+            TextButton(
+              onPressed: _generateQRCodePDF,
+              child: Text('Download PDF'),
+            ),
           ],
         );
       },
     );
+  }
+
+  void _selectBirthday(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedBirthday ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedBirthday) {
+      setState(() {
+        _selectedBirthday = picked;
+        fieldControllers['birthday']?.text =
+            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      });
+    }
   }
 
   @override
@@ -161,11 +235,23 @@ class _UserProfileState extends State<UserProfile> {
 
                   // Dynamic Profile Fields
                   for (String key in fieldKeys)
-                    ProfileField(
-                      label: key.replaceAll('_', ' ').toUpperCase(),
-                      controller: fieldControllers[key]!,
-                      isEditing: isEditing,
-                    ),
+                    if (key == 'birthday')
+                      GestureDetector(
+                        onTap: isEditing
+                            ? () => _selectBirthday(context)
+                            : null, // Allow selecting only in edit mode
+                        child: ProfileField(
+                          label: 'BIRTHDAY',
+                          controller: fieldControllers[key]!,
+                          isEditing: false, // Prevent direct editing
+                        ),
+                      )
+                    else
+                      ProfileField(
+                        label: key.replaceAll('_', ' ').toUpperCase(),
+                        controller: fieldControllers[key]!,
+                        isEditing: isEditing,
+                      ),
                   const SizedBox(height: 30.0),
 
                   // Edit/Save Button
@@ -191,11 +277,17 @@ class _UserProfileState extends State<UserProfile> {
               ),
             ),
           ),
+
+          // QR Code Icon Button
           Positioned(
-            right: 16.0,
-            top: 10.0,
+            top: 10,
+            right: 10,
             child: IconButton(
-              icon: Icon(Icons.qr_code, size: 45.0, color: Colors.blue),
+              icon: Icon(
+                Icons.qr_code,
+                color: Colors.teal,
+                size: 40,
+              ),
               onPressed: _showQRCodeDialog,
               tooltip: 'Show QR Code',
             ),

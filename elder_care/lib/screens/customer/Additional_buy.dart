@@ -6,13 +6,15 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class PackageBuy extends StatefulWidget {
+class AdditionalBuy extends StatefulWidget {
+  final int serviceId;
   final String userId;
   final String packageName;
   final String packagePrice;
   final String packageType;
 
-  PackageBuy({
+  AdditionalBuy({
+    required this.serviceId,
     required this.userId,
     required this.packageName,
     required this.packagePrice,
@@ -20,10 +22,10 @@ class PackageBuy extends StatefulWidget {
   });
 
   @override
-  _PackageBuyState createState() => _PackageBuyState();
+  _AdditionalBuyState createState() => _AdditionalBuyState();
 }
 
-class _PackageBuyState extends State<PackageBuy> {
+class _AdditionalBuyState extends State<AdditionalBuy> {
   final RentApi apiService = RentApi();
   final TextEditingController userIdController = TextEditingController();
   final TextEditingController userNameController = TextEditingController();
@@ -70,21 +72,39 @@ class _PackageBuyState extends State<PackageBuy> {
 
   Future<void> fetchPackageDetails() async {
     try {
+      // Log the API URL being called
+      print(
+          'Fetching package details from: ${apiService.mainurl()}/get_additional.php?id=${widget.serviceId}');
+
       final response = await http.get(Uri.parse(
-          '${apiService.mainurl()}/packages.php?package_name=${widget.packageName}'));
+          '${apiService.mainurl()}/get_additional.php?id=${widget.serviceId}'));
+
+      // Log the HTTP status code
+      print('Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
+        // Log the response body for debugging
+        print('Response body: ${response.body}');
+
         setState(() {
           packageData = json.decode(response.body);
           isLoading = false;
         });
       } else {
+        // Log error if the status code is not 200
+        print(
+            'Error: Failed to load package. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
         setState(() {
           isLoading = false;
           packageData = {'error': 'Failed to load package'};
         });
       }
     } catch (e) {
+      // Log the network or other exceptions
+      print('Network error: $e');
+
       setState(() {
         isLoading = false;
         packageData = {'error': 'Network error: $e'};

@@ -6,7 +6,7 @@ class ServiceProviderControlPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Two Card Layout'),
+        title: const Text('Service Control'),
         backgroundColor: Colors.teal,
       ),
       body: Padding(

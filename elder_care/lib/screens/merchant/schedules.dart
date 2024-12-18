@@ -30,16 +30,21 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['status'] == 'success') {
-          return data['data'];
+          return data['data']; // Return the list of appointments
         } else {
-          throw Exception(data['message'] ?? 'No appointments found.');
+          // Return an empty list if no appointments are found
+          print(data['message'] ?? 'No appointments found.');
+          return [];
         }
       } else {
-        throw Exception(
-            "Failed to load data. Status code: ${response.statusCode}");
+        // Handle non-200 status codes gracefully
+        print("Failed to load data. Status code: ${response.statusCode}");
+        return [];
       }
     } catch (e) {
-      throw Exception("Error: $e");
+      // Handle any exceptions gracefully by returning an empty list
+      print("Error fetching appointments: $e");
+      return [];
     }
   }
 

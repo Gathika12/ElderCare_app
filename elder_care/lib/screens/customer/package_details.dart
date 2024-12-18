@@ -79,7 +79,6 @@ class _PackageDetailsState extends State<PackageDetails> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Custom Back Button and Image Container (Unchanged)
                       // Custom Back Button and Image Container
                       Stack(
                         children: [
@@ -199,26 +198,14 @@ class _PackageDetailsState extends State<PackageDetails> {
                             ),
                             SizedBox(height: 12),
                             // Dynamic List of Services with Card
-                            _buildServiceItem("Daily Health Check-ins",
-                                packageData!['daily_health_check']),
-                            _buildServiceItem("On-Demand Assistance",
-                                packageData!['on_demand_assistance']),
+                            _buildServiceItem(
+                                "Health Check", packageData!['health_check']),
                             _buildServiceItem("Meal Planning & Nutrition",
                                 packageData!['meal_planning']),
                             _buildServiceItem("Social Engagement Activities",
                                 packageData!['social_engagement']),
-                            _buildServiceItem("Exercise & Mobility Support",
-                                packageData!['exercise_support']),
-                            _buildServiceItem("Home Safety Checks",
-                                packageData!['home_safety_checks']),
-                            _buildServiceItem("Medication Reminders",
-                                packageData!['medication_reminder']),
-                            _buildServiceItem("Transportation Coordination",
-                                packageData!['transport_support']),
-                            _buildServiceItem("Companion Services",
-                                packageData!['companion_service']),
-                            _buildServiceItem("Educational Content",
-                                packageData!['educational_content']),
+                            _buildServiceItem("Health Monitoring",
+                                packageData!['health_monitoring']),
                           ],
                         ),
                       ),

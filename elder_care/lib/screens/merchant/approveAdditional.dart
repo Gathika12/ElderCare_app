@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:elder_care/screens/merchant/buyers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -93,46 +93,21 @@ class _ApproveAdditionalState extends State<ApproveAdditional> {
                           ],
                         ),
                         trailing: Text('\$$price'),
+                        onTap: () {
+                          // Navigate to BuyersPage with packageName
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BuyersPage(
+                                serviceName: packageName,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
                 ),
-    );
-  }
-}
-
-// Main app
-void main() {
-  runApp(MaterialApp(
-    home: TestPage(),
-  ));
-}
-
-// Wrapper Page to test serviceProviderId passing
-class TestPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    const serviceProviderId = "12345";
-    return Scaffold(
-      appBar: AppBar(title: Text("Test Page")),
-      body: Center(
-        child: SizedBox(
-          width: 200,
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ApproveAdditional(
-                    serviceProviderId: serviceProviderId,
-                  ),
-                ),
-              );
-            },
-            child: Text("Go to Additional Services"),
-          ),
-        ),
-      ),
     );
   }
 }

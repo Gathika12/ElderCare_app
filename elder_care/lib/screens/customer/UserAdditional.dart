@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:elder_care/apiservice.dart';
+import 'package:elder_care/screens/customer/Additional_buy.dart';
 import 'package:elder_care/screens/customer/PackageBuy.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -70,7 +71,8 @@ class _UserAdditionalState extends State<UserAdditional> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PackageBuy(
+        builder: (context) => AdditionalBuy(
+          serviceId: serviceId,
           userId: widget.userId,
           packageName: packageName,
           packagePrice: packagePrice,
