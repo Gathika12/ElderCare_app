@@ -79,37 +79,6 @@ class _ServiceProvideProfileState extends State<ServiceProvideProfile> {
     }
   }
 
-  void _showQRCodeDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Center(child: Text('Scan Your QR Code')),
-          content: SizedBox(
-            width: 200.0,
-            height: 200.0,
-            child: Center(
-              child: QrImageView(
-                data:
-                    'NIC: $nic\nFull Name: $fullName\nUserID: ${widget.serviceProviderId}',
-                version: QrVersions.auto,
-                size: 200.0,
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _logout() {
     Navigator.pushReplacement(
       context,
@@ -163,18 +132,6 @@ class _ServiceProvideProfileState extends State<ServiceProvideProfile> {
       appBar: AppBar(
         backgroundColor: Colors.teal,
         title: Text('Service Provider Profile'),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.qr_code),
-            onPressed: _showQRCodeDialog,
-          )
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
