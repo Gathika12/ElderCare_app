@@ -154,19 +154,6 @@ class _MainBottomNavState extends State<MainBottomNav> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.approval),
-              title: Text('My Services'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => MyServices(
-                            userId: widget.userId,
-                          )),
-                );
-              },
-            ),
-            ListTile(
               leading: Icon(Icons.shopping_cart),
               title: Text('Buy Packages'),
               onTap: () {

@@ -141,13 +141,13 @@ class _UserProfileState extends State<UserProfile> {
     }
   }
 
-  Future<void> _generateQRCodePDF() async {
+  Future<void> _generateQRCodePDF(Map<String, String> qrData) async {
     final pdf = pw.Document();
 
     // Convert QR code data to an image
     final qrCode = await QrPainter(
       data:
-          'UserID: ${widget.userId}\nDetails: ${fieldControllers.map((key, value) => MapEntry(key, value.text))}',
+          'UserID: ${widget.userId}\nDetails: $qrData', // Pass the filtered data
       version: QrVersions.auto,
       gapless: false,
       color: Colors.black,
@@ -173,6 +173,12 @@ class _UserProfileState extends State<UserProfile> {
   }
 
   void _showQRCodeDialog() {
+    // Filter out the 'password' field
+    final qrData = fieldControllers.map((key, value) {
+      if (key == 'password') return MapEntry(key, 'Hidden'); // Exclude password
+      return MapEntry(key, value.text);
+    });
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -184,7 +190,7 @@ class _UserProfileState extends State<UserProfile> {
             child: Center(
               child: QrImageView(
                 data:
-                    'UserID: ${widget.userId}\nDetails: ${fieldControllers.map((key, value) => MapEntry(key, value.text))}',
+                    'UserID: ${widget.userId}\nDetails: $qrData', // Pass the filtered data
                 version: QrVersions.auto,
                 size: 200.0,
               ),
@@ -198,7 +204,9 @@ class _UserProfileState extends State<UserProfile> {
               child: Text('Close'),
             ),
             TextButton(
-              onPressed: _generateQRCodePDF,
+              onPressed: () async {
+                await _generateQRCodePDF(qrData); // Pass the filtered data
+              },
               child: Text('Download PDF'),
             ),
           ],
