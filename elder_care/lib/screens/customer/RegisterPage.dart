@@ -3,6 +3,7 @@ import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 
 class CustomerSignupPage extends StatefulWidget {
   @override
@@ -13,7 +14,9 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
   final RentApi apiService = RentApi();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _nicController = TextEditingController();
+  final MaskedTextController _nicController = MaskedTextController(
+      mask: '00000000000V'); // Example for NICs ending with 'V'
+
   final TextEditingController _birthdayController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -130,7 +133,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
     if (_formKey.currentState!.validate()) {
       final Map<String, dynamic> data = {
         'full_name': _firstNameController.text,
-        'nic': _nicController.text,
+        'nic': _nicController.text.trim(),
         'birthday': _birthdayController.text,
         'email': _emailController.text,
         'password': _passwordController.text,
@@ -167,7 +170,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                Navigator.pushReplacementNamed(context, '/login');
+                Navigator.pushReplacementNamed(context, '/user-login');
               },
               child: Text('OK'),
             ),
@@ -187,11 +190,15 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
     );
   }
 
-  Widget buildTextFieldWithLabel(String label, TextEditingController controller,
-      {bool isPassword = false,
-      TextInputType keyboardType = TextInputType.text,
-      String? placeholder,
-      Function()? onTap}) {
+  Widget buildTextFieldWithLabel(
+    String label,
+    TextEditingController controller, {
+    bool isPassword = false,
+    TextInputType keyboardType = TextInputType.text,
+    String? placeholder,
+    Function()? onTap,
+    String? Function(String?)? validator, // Add validator parameter
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0),
       child: Row(
@@ -226,12 +233,7 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                     obscureText: isPassword,
                     keyboardType: keyboardType,
                     style: TextStyle(fontSize: 16),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return '$label is required';
-                      }
-                      return null;
-                    },
+                    validator: validator, // Use the validator parameter
                   ),
                 ),
               ),
@@ -272,6 +274,16 @@ class _CustomerSignupPageState extends State<CustomerSignupPage> {
                     'NIC',
                     _nicController,
                     placeholder: 'Enter your NIC',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'NIC is required';
+                      }
+                      if (value.length != 12) {
+                        return 'NIC must be 12 characters';
+                      }
+                      // Add regex validation for specific NIC formats if needed
+                      return null;
+                    },
                   ),
                   buildTextFieldWithLabel(
                     'Birthday',

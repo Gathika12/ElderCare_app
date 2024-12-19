@@ -136,7 +136,7 @@ class _AdminLoginState extends State<AdminLogin> {
                           });
                         },
                         decoration: InputDecoration(
-                          labelText: 'Email',
+                          labelText: 'Username',
                           labelStyle: const TextStyle(color: Colors.black),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30.0),

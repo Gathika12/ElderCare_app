@@ -81,6 +81,7 @@ class _ServiceProviderRegisterPageState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Service Provider registered successfully')),
         );
+        Navigator.pop(context, true);
 
         _fullNameController.clear();
         _nicController.clear();
