@@ -35,6 +35,19 @@ class _UserProfileState extends State<UserProfile> {
     fetchUserProfile();
   }
 
+  String _getPackageName(String? packageValue) {
+    switch (packageValue) {
+      case '1':
+        return 'Silver';
+      case '2':
+        return 'Premium';
+      case '3':
+        return 'Gold';
+      default:
+        return 'Unknown';
+    }
+  }
+
   Future<void> fetchUserProfile() async {
     try {
       final response = await http.get(Uri.parse(
@@ -235,7 +248,9 @@ class _UserProfileState extends State<UserProfile> {
 
                   // Dynamic Profile Fields
                   for (String key in fieldKeys)
-                    if (key == 'birthday')
+                    if (key == 'password')
+                      SizedBox.shrink() // Skip rendering the password field
+                    else if (key == 'birthday')
                       GestureDetector(
                         onTap: isEditing
                             ? () => _selectBirthday(context)
@@ -246,12 +261,45 @@ class _UserProfileState extends State<UserProfile> {
                           isEditing: false, // Prevent direct editing
                         ),
                       )
+                    else if (key == 'package')
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'PACKAGE',
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.teal,
+                              ),
+                            ),
+                            const SizedBox(height: 5.0),
+                            TextFormField(
+                              controller: TextEditingController(
+                                text: _getPackageName(
+                                    fieldControllers[key]?.text),
+                              ),
+                              enabled: false, // Disable editing
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: Colors.grey[200],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
                     else
                       ProfileField(
                         label: key.replaceAll('_', ' ').toUpperCase(),
                         controller: fieldControllers[key]!,
                         isEditing: isEditing,
                       ),
+
                   const SizedBox(height: 30.0),
 
                   // Edit/Save Button

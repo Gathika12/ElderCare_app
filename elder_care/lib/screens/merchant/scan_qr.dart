@@ -1,4 +1,4 @@
-import 'package:elder_care/screens/merchant/user_date.dart';
+import 'package:elder_care/screens/merchant/user_date.dart'; // Page to show user data
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 

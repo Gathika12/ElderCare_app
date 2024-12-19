@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:elder_care/screens/merchant/ApproveMedicals.dart';
@@ -15,6 +16,7 @@ class MedicalViews extends StatefulWidget {
 }
 
 class _MedicalViewsState extends State<MedicalViews> {
+  final RentApi apiService = RentApi();
   late Future<List<dynamic>> _medicalData;
 
   // API URL
@@ -23,8 +25,9 @@ class _MedicalViewsState extends State<MedicalViews> {
   @override
   void initState() {
     super.initState();
-    apiUrl =
-        "http://10.0.2.2/eldercare/ViewMedicals.php?doctor_id=${widget.serviceProviderId}";
+    apiUrl = Uri.parse(
+            '${apiService.mainurl()}/ViewMedicals.php?doctor_id=${widget.serviceProviderId}')
+        .toString();
     _fetchMedicalData();
   }
 

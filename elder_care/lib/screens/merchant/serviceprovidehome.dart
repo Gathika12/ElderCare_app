@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/merchant/AdditionalPackages.dart';
 import 'package:elder_care/screens/merchant/ServiceProvideProfile.dart';
 import 'package:elder_care/screens/merchant/ServiceProviderNotification.dart';
@@ -24,11 +25,14 @@ class ServiceProvidePage extends StatefulWidget {
 }
 
 class _ServiceProvidePageState extends State<ServiceProvidePage> {
+  final RentApi apiService = RentApi();
+
   Map<String, dynamic>? merchantDetails;
 
   Future<void> fetchMerchantDetails() async {
     final String apiUrl =
-        "http://10.0.2.2/eldercare/merchant_details.php?id=${widget.serviceProviderId}";
+        '${apiService.mainurl()}/merchant_details.php?id=${widget.serviceProviderId}';
+
     try {
       final response = await http.get(Uri.parse(apiUrl));
       if (response.statusCode == 200) {

@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert'; // For JSON decoding
 import 'package:http/http.dart' as http;
@@ -9,12 +10,14 @@ class MealPlanPage extends StatefulWidget {
 }
 
 class _MealPlanPageState extends State<MealPlanPage> {
+  final RentApi apiService = RentApi();
   List<Map<String, dynamic>> mealPlans = []; // Holds meal plan data
   bool isLoading = true; // Indicates loading state
 
   // Fetch data from the API
+  // Fetch meal plans from the API
   Future<void> fetchMealPlans() async {
-    const String apiUrl = 'http://192.168.1.4/eldercare/get_meal_plans.php';
+    final String apiUrl = '${apiService.mainurl()}/get_meal_plans.php';
     try {
       final response = await http.get(Uri.parse(apiUrl));
 
@@ -37,9 +40,9 @@ class _MealPlanPageState extends State<MealPlanPage> {
     }
   }
 
-  // Delete meal plan from the API
+// Delete meal plan from the API
   Future<void> deleteMealPlan(int id) async {
-    const String apiUrl = 'http://192.168.1.4/eldercare/delete_meal_plan.php';
+    final String apiUrl = '${apiService.mainurl()}/delete_meal_plan.php';
 
     try {
       final response = await http.post(

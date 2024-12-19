@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/eldercare.dart';
 import 'package:elder_care/screens/ChooseRolePage.dart';
+import 'package:elder_care/screens/customer/RegisterPage.dart';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,7 @@ class LoginPage1 extends StatefulWidget {
 }
 
 class _LoginPage1State extends State<LoginPage1> {
+  final RentApi apiService = RentApi();
   String _email = '';
   String _password = '';
   bool _isPasswordVisible = false;
@@ -24,7 +27,7 @@ class _LoginPage1State extends State<LoginPage1> {
       BuildContext context, String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.4/eldercare/user_login.php'),
+        Uri.parse('${apiService.mainurl()}/user_login.php'),
         body: {
           'email': email,
           'password': password,
@@ -86,7 +89,29 @@ class _LoginPage1State extends State<LoginPage1> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: Text(message),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              Text(
+                'If you need technical support, please contact us at:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.phone, color: Colors.teal),
+                  const SizedBox(width: 8),
+                  Text(
+                    '+9477 535 9575', // Replace with your contact number
+                    style: TextStyle(
+                        color: Colors.teal, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ],
+          ),
           actions: <Widget>[
             TextButton(
               child: const Text('OK'),
@@ -152,7 +177,7 @@ class _LoginPage1State extends State<LoginPage1> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ChooseRolePage(),
+                                    builder: (context) => CustomerSignupPage(),
                                   ),
                                 );
                               },

@@ -1,4 +1,5 @@
 import 'package:elder_care/screens/admin/ViewAdditionalService.dart';
+import 'package:elder_care/screens/admin/ViewAllServiceProviders.dart';
 import 'package:flutter/material.dart';
 
 class ServiceProviderControlPage extends StatelessWidget {
@@ -22,7 +23,7 @@ class ServiceProviderControlPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => NewServiceProviderPage()),
+                        builder: (context) => ViewAllServiceProviders()),
                   );
                 },
                 child: Card(
@@ -44,7 +45,7 @@ class ServiceProviderControlPage extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          'New Service Providers',
+                          'View Service Providers',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,

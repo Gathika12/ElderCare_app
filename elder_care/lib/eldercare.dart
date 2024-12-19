@@ -167,8 +167,8 @@ class _MainBottomNavState extends State<MainBottomNav> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.health_and_safety),
-              title: Text('Health Monitoring'),
+              leading: Icon(Icons.shopping_cart),
+              title: Text('Buy Packages'),
               onTap: () {
                 _onItemTapped(1);
                 Navigator.pop(context);
@@ -176,7 +176,7 @@ class _MainBottomNavState extends State<MainBottomNav> {
             ),
             ListTile(
               leading: Icon(Icons.notifications),
-              title: Text('Reminders'),
+              title: Text('Notifications'),
               onTap: () {
                 _onItemTapped(2);
                 Navigator.pop(context);
@@ -203,13 +203,8 @@ class _MainBottomNavState extends State<MainBottomNav> {
               leading: Icon(Icons.help),
               title: Text('Help'),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => HelpContactPage1(
-                            userId: widget.userId,
-                          )),
-                );
+                _onItemTapped(3);
+                Navigator.pop(context);
               },
             ),
             ListTile(

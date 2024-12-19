@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -8,6 +9,7 @@ class AlertDialogInterface extends StatefulWidget {
 }
 
 class _AlertDialogInterfaceState extends State<AlertDialogInterface> {
+  final RentApi apiService = RentApi();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -17,7 +19,7 @@ class _AlertDialogInterfaceState extends State<AlertDialogInterface> {
 
   Future<void> _sendNotification(String title, String imageUrl,
       String description, String recipient) async {
-    const String apiUrl = 'http://192.168.1.4/eldercare/send_alert.php';
+    final String apiUrl = '${apiService.mainurl()}/send_alert.php';
 
     // Set status based on the selected recipient
     final int status = (recipient == 'User') ? 1 : 0;

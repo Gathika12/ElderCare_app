@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,7 @@ class UserComplaints extends StatefulWidget {
 }
 
 class _UserComplaintsState extends State<UserComplaints> {
+  final RentApi apiService = RentApi();
   List<dynamic> complaints = [];
   List<dynamic> filteredComplaints = [];
   bool isLoading = true;
@@ -34,7 +36,7 @@ class _UserComplaintsState extends State<UserComplaints> {
 
     try {
       final response = await http
-          .get(Uri.parse('http://192.168.1.4/eldercare/get_complaints.php'));
+          .get(Uri.parse('${apiService.mainurl()}/get_complaints.php'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

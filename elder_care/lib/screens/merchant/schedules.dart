@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -12,8 +13,10 @@ class AppointmentsPage extends StatefulWidget {
 }
 
 class _AppointmentsPageState extends State<AppointmentsPage> {
+  final RentApi apiService = RentApi();
+
   late Future<List<dynamic>> _appointments;
-  final String apiUrl = "http://192.168.1.4/eldercare/schedules.php";
+  //final String apiUrl = "http://192.168.1.4/eldercare/schedules.php";
 
   @override
   void initState() {
@@ -22,6 +25,8 @@ class _AppointmentsPageState extends State<AppointmentsPage> {
   }
 
   Future<List<dynamic>> fetchAppointments() async {
+    final String apiUrl = '${apiService.mainurl()}/schedules.php';
+
     try {
       final response = await http.get(
         Uri.parse('$apiUrl?doctor_id=${widget.doctorId}'),

@@ -58,6 +58,8 @@ class _NearestDoctorsPageState extends State<NearestDoctorsPage> {
   }
 
   Future<void> _fetchDoctors() async {
+    final String apiUrl = '${apiService.mainurl()}/get_doctor.php';
+
     try {
       final response = await http.get(Uri.parse(apiUrl));
 
@@ -113,6 +115,8 @@ class _NearestDoctorsPageState extends State<NearestDoctorsPage> {
   }
 
   Future<void> _saveCheckup(String doctorId, String userRemark) async {
+    final String saveCheckupApi = '${apiService.mainurl()}/user_checkup.php';
+
     try {
       final response = await http.post(
         Uri.parse(saveCheckupApi),

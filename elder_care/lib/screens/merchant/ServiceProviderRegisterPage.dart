@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -11,6 +12,7 @@ class ServiceProviderRegisterPage extends StatefulWidget {
 
 class _ServiceProviderRegisterPageState
     extends State<ServiceProviderRegisterPage> {
+  final RentApi apiService = RentApi();
   final _formKey = GlobalKey<FormState>();
   String? _selectedCategory;
   final List<String> _categories = ['Doctor', 'Service Provider'];
@@ -55,7 +57,7 @@ class _ServiceProviderRegisterPageState
       TextEditingController(); // Password controller
 
   Future<void> _registerServiceProvider() async {
-    final String apiUrl = "http://10.0.2.2/eldercare/serviceprovider.php";
+    final String apiUrl = '${apiService.mainurl()}/serviceprovider.php';
 
     final Map<String, dynamic> data = {
       'full_name': _fullNameController.text,

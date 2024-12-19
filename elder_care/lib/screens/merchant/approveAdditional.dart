@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/merchant/buyers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -16,6 +17,8 @@ class ApproveAdditional extends StatefulWidget {
 }
 
 class _ApproveAdditionalState extends State<ApproveAdditional> {
+  final RentApi apiService = RentApi();
+
   List<dynamic> services = [];
   bool isLoading = true;
   String errorMessage = '';
@@ -30,7 +33,7 @@ class _ApproveAdditionalState extends State<ApproveAdditional> {
     try {
       final response = await http.get(
         Uri.parse(
-            'http://192.168.1.4/eldercare/viewApprovePackage.php?serviceProviderId=${widget.serviceProviderId}'),
+            '${apiService.mainurl()}/viewApprovePackage.php?serviceProviderId=${widget.serviceProviderId}'),
       );
 
       if (response.statusCode == 200) {

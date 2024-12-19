@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -14,6 +15,7 @@ class ViewproviderAdditional extends StatefulWidget {
 }
 
 class _ViewproviderAdditionalState extends State<ViewproviderAdditional> {
+  final RentApi apiService = RentApi();
   List<dynamic> services = []; // To hold the fetched services
   bool isLoading = true; // To track loading state
   String errorMessage = ''; // To display error messages
@@ -29,7 +31,7 @@ class _ViewproviderAdditionalState extends State<ViewproviderAdditional> {
   Future<void> fetchServices() async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.4/eldercare/viewpackagedetails.php'),
+        Uri.parse('${apiService.mainurl()}/viewpackagedetails.php'),
         body: {
           'pid': widget
               .serviceProviderId, // Send serviceProviderId as a POST parameter

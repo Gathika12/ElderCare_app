@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -11,6 +12,8 @@ class ApproveMedicals extends StatefulWidget {
 }
 
 class _ApproveMedicalsState extends State<ApproveMedicals> {
+  final RentApi apiService = RentApi();
+
   late TextEditingController checkupLocationController;
   late TextEditingController checkupDateController;
   late TextEditingController doctorRemarkController;
@@ -51,7 +54,7 @@ class _ApproveMedicalsState extends State<ApproveMedicals> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.1.4/eldercare/UpdateMedical.php'),
+        Uri.parse('${apiService.mainurl()}/UpdateMedical.php'),
         body: data,
       );
 

@@ -49,12 +49,17 @@ class _EventsScreenState extends State<EventsScreen> {
 
           setState(() {
             // Filter events: exclude those with event_date <= current date
-            _events =
-                rawEvents.map((e) => e as Map<String, dynamic>).where((event) {
-              final eventDate = DateTime.tryParse(event['event_date'] ?? '');
-              if (eventDate == null) return false; // Exclude invalid dates
-              return eventDate.isAfter(DateTime.now()); // Only future dates
-            }).toList();
+            _events = rawEvents
+                .map((e) => e as Map<String, dynamic>)
+                .where((event) {
+                  final eventDate =
+                      DateTime.tryParse(event['event_date'] ?? '');
+                  if (eventDate == null) return false; // Exclude invalid dates
+                  return eventDate.isAfter(DateTime.now()); // Only future dates
+                })
+                .toList()
+                .reversed // Reverse the filtered list for LIFO order
+                .toList();
           });
 
           print("Filtered Events: $_events");

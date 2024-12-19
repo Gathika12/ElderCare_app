@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/merchant/ViewproviderAdditional.dart';
 import 'package:elder_care/screens/merchant/approveAdditional.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class AdditionalPackages extends StatefulWidget {
 }
 
 class _AdditionalPackagesState extends State<AdditionalPackages> {
+  final RentApi apiService = RentApi();
   final TextEditingController _payeeNameController = TextEditingController();
   final TextEditingController _packageNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -58,7 +60,7 @@ class _AdditionalPackagesState extends State<AdditionalPackages> {
 
     try {
       final http.Response response = await http.post(
-        Uri.parse('http://192.168.1.4/eldercare/insert_package.php'),
+        Uri.parse('${apiService.mainurl()}/insert_package.php'),
         headers: <String, String>{'Content-Type': 'application/json'},
         body: json.encode(data),
       );

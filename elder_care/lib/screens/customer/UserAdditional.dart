@@ -87,7 +87,7 @@ class _UserAdditionalState extends State<UserAdditional> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Additional Services'),
-        backgroundColor: const Color(0xFF04C2C2),
+        backgroundColor: Colors.teal,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

@@ -37,8 +37,8 @@ class _UsersTableState extends State<UsersTable> {
     });
 
     try {
-      final response = await http.get(
-          Uri.parse('http://gathikacolambage.site/eldercare//all_users.php'));
+      final response =
+          await http.get(Uri.parse('${apiService.mainurl()}/all_users.php'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

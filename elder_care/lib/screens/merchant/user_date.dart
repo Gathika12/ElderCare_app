@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -5,46 +6,40 @@ import 'dart:convert';
 class UserDataPage extends StatefulWidget {
   final String userId;
 
-  const UserDataPage({Key? key, required this.userId}) : super(key: key);
+  UserDataPage({required this.userId});
 
   @override
   _UserDataPageState createState() => _UserDataPageState();
 }
 
 class _UserDataPageState extends State<UserDataPage> {
+  final RentApi apiService = RentApi();
   Map<String, dynamic>? userData;
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    fetchUserData();
+    _fetchUserData();
   }
 
-  Future<void> fetchUserData() async {
-    final String apiUrl =
-        'http://10.0.2.2/eldercare/get_user.php?id=${widget.userId}';
-    try {
-      final response = await http.get(Uri.parse(apiUrl));
-      if (response.statusCode == 200) {
-        setState(() {
-          userData = json.decode(response.body);
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load user data')),
-        );
-      }
-    } catch (error) {
+  Future<void> _fetchUserData() async {
+    final response = await http.get(
+      Uri.parse(
+          '${apiService.mainurl()}/get_user_data.php?userId=${widget.userId}'),
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        userData = json.decode(response.body)['data'];
+        isLoading = false;
+      });
+    } else {
       setState(() {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching user data')),
+        SnackBar(content: Text('Failed to fetch user data')),
       );
     }
   }
@@ -60,20 +55,36 @@ class _UserDataPageState extends State<UserDataPage> {
           : userData != null
               ? Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: ListView(
-                    children: userData!.entries.map((entry) {
-                      return ListTile(
-                        title: Text(
-                          entry.key.replaceAll('_', ' ').toUpperCase(),
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(entry.value.toString()),
-                      );
-                    }).toList(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('User ID: ${userData!['id']}'),
+                      SizedBox(height: 8),
+                      Text('Name: ${userData!['full_name']}'),
+                      SizedBox(height: 8),
+                      Text('Email: ${userData!['nic']}'),
+                      SizedBox(height: 8),
+                      Text('Phone: ${userData!['birthday']}'),
+                      SizedBox(height: 8),
+                      Text('Address: ${userData!['email']}'),
+                      SizedBox(height: 8),
+                      Text('Address: ${userData!['age']}'),
+                      SizedBox(height: 8),
+                      Text('Address: ${userData!['gender']}'),
+                      SizedBox(height: 8),
+                      Text('Address: ${userData!['city']}'),
+                      SizedBox(height: 8),
+                      Text('Address: ${userData!['mobile_no']}'),
+                      SizedBox(height: 8),
+                      Text('Address: ${userData!['blood_group']}'),
+                      SizedBox(height: 8),
+                      Text('Address: ${userData!['health_issues']}'),
+                      // Add more fields as necessary
+                    ],
                   ),
                 )
               : Center(
-                  child: Text('No user data available'),
+                  child: Text('No user data found'),
                 ),
     );
   }

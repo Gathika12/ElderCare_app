@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -12,6 +13,7 @@ class AddMealPlanPage extends StatefulWidget {
 }
 
 class _AddMealPlanPageState extends State<AddMealPlanPage> {
+  final RentApi apiService = RentApi();
   final _formKey = GlobalKey<FormState>();
   String? _conditions;
   String? _preference;
@@ -35,9 +37,8 @@ class _AddMealPlanPageState extends State<AddMealPlanPage> {
   Future<void> submitMealPlans() async {
     final isEditing = widget.mealPlan != null;
     final url = Uri.parse(
-      isEditing
-          ? 'http://localhost/eldercare/update_mealplan.php' // Update endpoint
-          : 'http://localhost/eldercare/add_mealplan.php', // Add endpoint
+      '${apiService.mainurl()}/' +
+          (isEditing ? 'update_mealplan.php' : 'add_mealplan.php'),
     );
 
     // Send POST request with form data
@@ -71,7 +72,8 @@ class _AddMealPlanPageState extends State<AddMealPlanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.mealPlan != null ? 'Edit Meal Plan' : 'Add Meal Plan'),
+        title:
+            Text(widget.mealPlan != null ? 'Edit Meal Plan' : 'Add Meal Plan'),
         backgroundColor: Colors.teal,
       ),
       body: Padding(
@@ -146,7 +148,9 @@ class _AddMealPlanPageState extends State<AddMealPlanPage> {
                     }
                   },
                   child: Text(
-                    widget.mealPlan != null ? 'Update Meal Plan' : 'Add Meal Plan',
+                    widget.mealPlan != null
+                        ? 'Update Meal Plan'
+                        : 'Add Meal Plan',
                   ),
                 ),
               ],

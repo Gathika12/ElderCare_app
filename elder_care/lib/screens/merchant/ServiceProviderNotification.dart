@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:timeago/timeago.dart' as timeago;
@@ -13,6 +14,7 @@ class ServiceProviderNotification extends StatefulWidget {
 
 class _ServiceProviderNotificationState
     extends State<ServiceProviderNotification> {
+  final RentApi apiService = RentApi();
   List<Map<String, dynamic>> notifications = [];
   bool isLoading = true; // Added loading state
 
@@ -24,8 +26,7 @@ class _ServiceProviderNotificationState
 
   Future<void> fetchNotifications() async {
     final String apiUrl =
-        'http://10.0.2.2/eldercare/serviceprovider_notification.php'; 
-        // Replace with your API endpoint
+        '${apiService.mainurl()}/serviceprovider_notification.php';
 
     try {
       final response = await http.get(Uri.parse(apiUrl));

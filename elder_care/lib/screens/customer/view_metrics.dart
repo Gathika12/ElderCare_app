@@ -25,7 +25,7 @@ class _ViewMetricsScreenState extends State<ViewMetricsScreen> {
   Future<void> fetchMetrics() async {
     final response = await http.get(
       Uri.parse(
-          'http://gathikacolambage.site/eldercare/get_metrics.php?user_id=${widget.userId}'),
+          '${apiService.mainurl()}/get_metrics.php?user_id=${widget.userId}'),
     );
 
     if (response.statusCode == 200) {
