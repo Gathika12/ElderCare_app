@@ -1,76 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-class HelpContactPage1 extends StatefulWidget {
-  final String userId;
-
-  HelpContactPage1({Key? key, required this.userId}) : super(key: key);
-
-  @override
-  _HelpContactPage1State createState() => _HelpContactPage1State();
-}
-
-class _HelpContactPage1State extends State<HelpContactPage1> {
-  final TextEditingController _fullNameController = TextEditingController();
-
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _commentsController = TextEditingController();
-
-  // Form key to manage form state
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  // Replace with your actual PHP endpoint URL
-  final String apiUrl = 'http://10.0.2.2/eldercare/contact.php';
-
-  @override
-  void initState() {
-    super.initState();
-    // Log the userId to the console
-    debugPrint('User ID: ${widget.userId}');
-  }
-
-  // Method to send data to the PHP backend
-  Future<void> _submitContactForm() async {
-    if (_formKey.currentState!.validate()) {
-      final Map<String, String> requestBody = {
-        'user_Id': widget.userId,
-        'full_name': _fullNameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'comments': _commentsController.text.trim(),
-      };
-
-      try {
-        final response = await http.post(
-          Uri.parse(apiUrl),
-          body: requestBody,
-        );
-
-        if (response.statusCode == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Form submitted successfully!')),
-          );
-          _clearForm();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to submit form. Try again.')),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-      }
-    }
-  }
-
-  // Method to clear the form fields
-  void _clearForm() {
-    _fullNameController.clear();
-
-    _emailController.clear();
-    _commentsController.clear();
-  }
-
+class HelpContactPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,6 +8,7 @@ class _HelpContactPage1State extends State<HelpContactPage1> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        automaticallyImplyLeading: false, // Removes the backward arrow
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -176,11 +107,10 @@ class _HelpContactPage1State extends State<HelpContactPage1> {
     );
   }
 
-  Widget _contactInfo({
-    required IconData icon,
-    required String title,
-    required String details,
-  }) {
+  Widget _contactInfo(
+      {required IconData icon,
+      required String title,
+      required String details}) {
     return Column(
       children: [
         Icon(icon, size: 40, color: Colors.white),
@@ -204,77 +134,40 @@ class _HelpContactPage1State extends State<HelpContactPage1> {
   }
 
   Widget _buildContactForm() {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _buildTextField(
-                  controller: _fullNameController,
-                  label: 'Full Name',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Full name is required';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          _buildTextField(
-            controller: _emailController,
-            label: 'Email',
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Email is required';
-              }
-              if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
-                  .hasMatch(value)) {
-                return 'Please enter a valid email';
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: 16),
-          _buildTextField(
-            controller: _commentsController,
-            label: 'Comments',
-            maxLines: 4,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Comments are required';
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _submitContactForm,
-            child: Text('Submit'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF00A79B),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 10),
-              textStyle: TextStyle(fontSize: 16),
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildTextField(label: 'First Name'),
             ),
+            SizedBox(width: 16),
+            Expanded(
+              child: _buildTextField(label: 'Last Name'),
+            ),
+          ],
+        ),
+        SizedBox(height: 16),
+        _buildTextField(label: 'Email'),
+        SizedBox(height: 16),
+        _buildTextField(label: 'Comments', maxLines: 4),
+        SizedBox(height: 24),
+        ElevatedButton(
+          onPressed: () {},
+          child: Text('Submit'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFF00A79B),
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 10),
+            textStyle: TextStyle(fontSize: 16),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
+  Widget _buildTextField({required String label, int maxLines = 1}) {
+    return TextField(
       maxLines: maxLines,
       decoration: InputDecoration(
         labelText: label,
@@ -284,7 +177,6 @@ class _HelpContactPage1State extends State<HelpContactPage1> {
         filled: true,
         fillColor: Colors.grey[200],
       ),
-      validator: validator,
     );
   }
 }

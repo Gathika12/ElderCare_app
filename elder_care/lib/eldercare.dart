@@ -1,7 +1,6 @@
 import 'package:elder_care/screens/admin/ServiceProviderControlPage.dart';
 import 'package:elder_care/screens/customer/UserAdditional.dart';
 import 'package:elder_care/screens/customer/UserProfile%20.dart';
-import 'package:elder_care/screens/customer/contact1.dart';
 import 'package:elder_care/screens/customer/my_services.dart';
 import 'package:elder_care/screens/merchant/ViewproviderAdditional.dart';
 import 'package:elder_care/screens/customer/contact.dart';

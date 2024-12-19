@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/service-login',
+      initialRoute: '/user-login',
       routes: {
         '/login': (context) => LoginPage(
               role: '',
@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         '/admin-login': (context) => AdminLogin(),
         '/role': (context) => ChooseRolePage(),
         //'/Home': (context) => UserDashboard(),
-        '/contact': (context) => HelpContactPage(),
+        //'/contact': (context) => HelpContactPage(),
         '/admin': (context) => ServiceProvidePage(
             serviceProviderId: '4', serviceProviderName: 'Sachini'),
         //'/register': (context) => SignupPage(),

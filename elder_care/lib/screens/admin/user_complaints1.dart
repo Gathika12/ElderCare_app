@@ -1,3 +1,4 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,7 @@ class UserComplaints extends StatefulWidget {
 }
 
 class _UserComplaintsState extends State<UserComplaints> {
+  final RentApi apiService = RentApi();
   List<dynamic> complaints = [];
   List<dynamic> filteredComplaints = [];
   bool isLoading = true;
@@ -33,26 +35,21 @@ class _UserComplaintsState extends State<UserComplaints> {
     });
 
     try {
-      final response = await http.get(Uri.parse('http://localhost/eldercare/get_complaints.php'));
+      final response = await http
+          .get(Uri.parse('${apiService.mainurl()}/get_complaints.php'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data is List) {
-          setState(() {
-            complaints = data;
-            filteredComplaints = complaints; // Initially show all complaints
-            isLoading = false;
-          });
-        } else {
-          setState(() {
-            errorMessage = 'Invalid response format.';
-            isLoading = false;
-          });
-        }
+        setState(() {
+          complaints = data;
+          filteredComplaints = complaints; // Initially show all complaints
+          isLoading = false;
+        });
       } else {
         setState(() {
           errorMessage = 'Failed to load complaints: ${response.statusCode}';
           isLoading = false;
+          print(response.body);
         });
       }
     } catch (error) {
@@ -66,19 +63,13 @@ class _UserComplaintsState extends State<UserComplaints> {
   void applyFilters() {
     setState(() {
       filteredComplaints = complaints.where((complaint) {
-        final fullName = '${complaint['full_name']} '.toLowerCase();
+        final fullName = '${complaint['first_name']} ${complaint['last_name']}'
+            .toLowerCase();
         final id = complaint['id'].toString();
-        final userId = complaint['user_Id']?.toString() ?? '';
 
         return fullName.contains(searchFilter.toLowerCase()) ||
-            id.contains(searchFilter) ||
-            userId.contains(searchFilter);
+            id.contains(searchFilter);
       }).toList();
-
-      // Log user_ids to the console
-      for (var complaint in filteredComplaints) {
-        debugPrint('User ID: ${complaint['user_Id']}');
-      }
     });
   }
 
@@ -94,17 +85,15 @@ class _UserComplaintsState extends State<UserComplaints> {
               : b['id'].compareTo(a['id']);
         } else if (columnIndex == 1) {
           return ascending
-              ? a['user_Id']?.compareTo(b['user_Id']) ?? 0
-              : b['user_Id']?.compareTo(a['user_Id']) ?? 0;
+              ? '${a['first_name']} ${a['last_name']}'
+                  .compareTo('${b['first_name']} ${b['last_name']}')
+              : '${b['first_name']} ${b['last_name']}'
+                  .compareTo('${a['first_name']} ${a['last_name']}');
         } else if (columnIndex == 2) {
-          return ascending
-              ? '${a['full_name']} '.compareTo('${b['full_name']} ')
-              : '${b['full_name']} '.compareTo('${a['full_name']} ');
-        } else if (columnIndex == 3) {
           return ascending
               ? a['email'].compareTo(b['email'])
               : b['email'].compareTo(a['email']);
-        } else if (columnIndex == 4) {
+        } else if (columnIndex == 3) {
           return ascending
               ? a['comments'].compareTo(b['comments'])
               : b['comments'].compareTo(a['comments']);
@@ -131,7 +120,7 @@ class _UserComplaintsState extends State<UserComplaints> {
                       padding: const EdgeInsets.all(16.0),
                       child: TextField(
                         decoration: InputDecoration(
-                          labelText: 'Search by Name, ID, User ID, or Comments',
+                          labelText: 'Search by Name, ID or Comments',
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.search, color: Colors.teal),
                         ),
@@ -163,12 +152,6 @@ class _UserComplaintsState extends State<UserComplaints> {
                                     onSort(index, ascending),
                               ),
                               DataColumn(
-                                label: Text('User ID'),
-                                numeric: true,
-                                onSort: (index, ascending) =>
-                                    onSort(index, ascending),
-                              ),
-                              DataColumn(
                                 label: Text('Name'),
                                 onSort: (index, ascending) =>
                                     onSort(index, ascending),
@@ -188,11 +171,11 @@ class _UserComplaintsState extends State<UserComplaints> {
                               return DataRow(
                                 cells: [
                                   DataCell(Text(complaint['id'].toString())),
-                                  DataCell(Text(complaint['user_Id']?.toString() ?? 'N/A')),
                                   DataCell(Text(
-                                      '${complaint['full_name']} ')),
+                                      '${complaint['first_name']} ${complaint['last_name']}')),
                                   DataCell(Text(complaint['email'] ?? 'N/A')),
-                                  DataCell(Text(complaint['comments'] ?? 'N/A')),
+                                  DataCell(
+                                      Text(complaint['comments'] ?? 'N/A')),
                                 ],
                               );
                             }).toList(),
