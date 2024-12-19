@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/login_page.dart';
+import 'package:elder_care/screens/merchant/serviceprovider_login.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:qr_flutter/qr_flutter.dart'; // Import the QR code package
@@ -82,10 +83,7 @@ class _ServiceProvideProfileState extends State<ServiceProvideProfile> {
   void _logout() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-          builder: (context) => LoginPage(
-                role: '',
-              )),
+      MaterialPageRoute(builder: (context) => ServiceproviderLogin()),
     );
   }
 

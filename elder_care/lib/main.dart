@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/user-login',
+      initialRoute: '/admin-login',
       routes: {
         '/login': (context) => LoginPage(
               role: '',

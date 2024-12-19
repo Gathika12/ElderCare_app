@@ -9,6 +9,7 @@ import 'package:elder_care/screens/customer/notifications.dart';
 import 'package:elder_care/screens/customer/packages.dart';
 
 import 'package:elder_care/screens/login_page.dart';
+import 'package:elder_care/screens/user_login_page.dart';
 
 //import 'package:elder_care/screens/packages.dart';
 import 'package:flutter/material.dart';
@@ -212,10 +213,7 @@ class _MainBottomNavState extends State<MainBottomNav> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => LoginPage(
-                            role: '',
-                          )),
+                  MaterialPageRoute(builder: (context) => LoginPage1()),
                 );
               },
             ),

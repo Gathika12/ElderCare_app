@@ -31,33 +31,7 @@ class _UserDashboardState extends State<UserDashboard>
     'assets/images/slide2.jpg',
     'assets/images/slide3.jpg'
   ];
-  List<Map<String, String>> _playlist = [
-    {
-      'title': 'Song 1',
-      'artist': 'Artist 1',
-      'url': 'music/songs1.mp3', // Local path
-    },
-    {
-      'title': 'Song 2',
-      'artist': 'Artist 2',
-      'url': 'music/songs2.mp3',
-    },
-    {
-      'title': 'Song 3',
-      'artist': 'Artist 3',
-      'url': 'music/songs3.mp3',
-    },
-    {
-      'title': 'Song 4',
-      'artist': 'Artist 4',
-      'url': 'music/songs4.mp3',
-    },
-    {
-      'title': 'Song 5',
-      'artist': 'Artist 5',
-      'url': 'music/songs5.mp3',
-    },
-  ];
+  List<Map<String, dynamic>> _playlist = [];
 
   bool isPlaying = false;
   bool isLoading = true;
@@ -66,8 +40,8 @@ class _UserDashboardState extends State<UserDashboard>
   @override
   void initState() {
     super.initState();
+    fetchPlaylist();
     _fetchPackageStatus();
-
     _initializeAnimations();
   }
 
@@ -77,6 +51,44 @@ class _UserDashboardState extends State<UserDashboard>
     setState(() {
       isLoading = false;
     });
+  }
+
+  Future<void> fetchPlaylist() async {
+    final url = Uri.parse('${apiService.mainurl()}/get_music.php');
+    try {
+      final response = await http.get(url);
+
+      // Log the full response for debugging
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        // Log parsed data for debugging
+        print('Parsed Data: $data');
+
+        if (data['status'] == 'success') {
+          setState(() {
+            _playlist =
+                List<Map<String, dynamic>>.from(data['data']).map((item) {
+              return {
+                'id': item['id'].toString(), // Convert to String
+                'title': item['title'] ?? 'Unknown Title',
+                'artist': item['artist'] ?? 'Unknown Artist',
+                'url': item['url'] ?? '',
+              };
+            }).toList();
+          });
+        } else {
+          print('Error Message from API: ${data['message']}');
+        }
+      } else {
+        print('Failed to load playlist: HTTP ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Exception caught during fetchPlaylist: $e');
+    }
   }
 
   // Function to handle track play/pause
@@ -411,20 +423,26 @@ class _UserDashboardState extends State<UserDashboard>
                   itemCount: _playlist.length,
                   itemBuilder: (context, index) {
                     return Card(
-                      margin: EdgeInsets.symmetric(vertical: 5),
-                      elevation: 3, // Added elevation to each track card
-                      child: ListTile(
-                        leading: Icon(Icons.music_note, color: Colors.blue),
-                        title: Text(_playlist[index]['title']!),
-                        subtitle: Text(_playlist[index]['artist']!),
-                        trailing: IconButton(
-                          icon: Icon(Icons.play_arrow),
-                          onPressed: () {
-                            _playTrack(_playlist[index]['url']!);
-                          },
-                        ),
-                      ),
-                    );
+                        margin: EdgeInsets.symmetric(vertical: 5),
+                        elevation: 3,
+                        child: ListTile(
+                          leading: _playlist[index]['thumbnail_url'] != null
+                              ? Image.network(
+                                  _playlist[index]['thumbnail_url']!,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                )
+                              : Icon(Icons.music_note, color: Colors.blue),
+                          title: Text(_playlist[index]['title']!),
+                          subtitle: Text(_playlist[index]['artist']!),
+                          trailing: IconButton(
+                            icon: Icon(Icons.play_arrow),
+                            onPressed: () {
+                              _playTrack(_playlist[index]['url']!);
+                            },
+                          ),
+                        ));
                   },
                 ),
               ),

@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:elder_care/apiservice.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -43,7 +42,6 @@ class _ServiceProviderRegisterPageState
     'Trincomalee',
     'Vavuniya'
   ];
-  // Sample areas
 
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _nicController = TextEditingController();
@@ -53,8 +51,7 @@ class _ServiceProviderRegisterPageState
   final TextEditingController _companyNameController = TextEditingController();
   final TextEditingController _areaNameController = TextEditingController();
   final TextEditingController _positionController = TextEditingController();
-  final TextEditingController _passwordController =
-      TextEditingController(); // Password controller
+  final TextEditingController _passwordController = TextEditingController();
 
   Future<void> _registerServiceProvider() async {
     final String apiUrl = '${apiService.mainurl()}/serviceprovider.php';
@@ -120,40 +117,92 @@ class _ServiceProviderRegisterPageState
           key: _formKey,
           child: Column(
             children: [
-              _buildTextField(
-                  _fullNameController, 'Full Name', 'Enter your full name'),
-              _buildTextField(_nicController, 'NIC', 'Enter your NIC'),
-              _buildTextField(_emailController, 'Email', 'Enter your email'),
-              _buildTextField(
-                _contactNumberController,
-                'Contact Number',
-                'Enter your contact number',
-                keyboardType: TextInputType.phone,
+              _buildValidatedTextField(
+                controller: _fullNameController,
+                label: 'Full Name',
+                placeholder: 'Enter your full name',
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Full Name is required';
+                  }
+                  return null;
+                },
               ),
-              _buildTextField(_companyNameController, 'Company Name',
-                  'Enter your company name'),
-              _buildAreaAutocompleteField(), // Autocomplete field for area
-              _buildTextField(
-                  _positionController, 'Position', 'Enter your position'),
-              _buildTextField(
-                _passwordController,
-                'Password',
-                'Enter your password',
-                keyboardType: TextInputType.visiblePassword,
+              _buildValidatedTextField(
+                controller: _nicController,
+                label: 'NIC',
+                placeholder: 'Enter your NIC',
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'NIC is required';
+                  }
+                  return null;
+                },
+              ),
+              _buildValidatedTextField(
+                controller: _emailController,
+                label: 'Email',
+                placeholder: 'Enter your email',
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Email is required';
+                  } else if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                      .hasMatch(value)) {
+                    return 'Enter a valid email';
+                  }
+                  return null;
+                },
+              ),
+              _buildValidatedTextField(
+                controller: _contactNumberController,
+                label: 'Contact Number',
+                placeholder: 'Enter your contact number',
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Contact Number is required';
+                  }
+                  return null;
+                },
+              ),
+              _buildValidatedTextField(
+                controller: _companyNameController,
+                label: 'Company Name',
+                placeholder: 'Enter your company name',
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Company Name is required';
+                  }
+                  return null;
+                },
+              ),
+              _buildAreaAutocompleteField(),
+              _buildValidatedTextField(
+                controller: _positionController,
+                label: 'Position',
+                placeholder: 'Enter your position',
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Position is required';
+                  }
+                  return null;
+                },
+              ),
+              _buildValidatedTextField(
+                controller: _passwordController,
+                label: 'Password',
+                placeholder: 'Enter your password',
                 isPassword: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Password is required';
+                  } else if (value.length < 6) {
+                    return 'Password must be at least 6 characters long';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Category',
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 decoration: const InputDecoration(border: OutlineInputBorder()),
@@ -183,7 +232,7 @@ class _ServiceProviderRegisterPageState
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text('Please fill in all fields')),
+                          content: Text('Please fill in all fields correctly')),
                     );
                   }
                 },
@@ -226,13 +275,19 @@ class _ServiceProviderRegisterPageState
             _areaNameController.addListener(() {
               textEditingController.text = _areaNameController.text;
             });
-            return TextField(
+            return TextFormField(
               controller: textEditingController,
               focusNode: focusNode,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 hintText: 'Enter your Service Providing Area',
               ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Service Providing Area is required';
+                }
+                return null;
+              },
             );
           },
         ),
@@ -241,16 +296,21 @@ class _ServiceProviderRegisterPageState
     );
   }
 
-  Widget _buildTextField(
-      TextEditingController controller, String label, String placeholder,
-      {TextInputType? keyboardType, bool isPassword = false}) {
+  Widget _buildValidatedTextField({
+    required TextEditingController controller,
+    required String label,
+    required String placeholder,
+    TextInputType? keyboardType,
+    bool isPassword = false,
+    required String? Function(String?) validator,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        TextField(
+        TextFormField(
           controller: controller,
           keyboardType: keyboardType,
           obscureText: isPassword,
@@ -259,6 +319,7 @@ class _ServiceProviderRegisterPageState
             hintText: placeholder,
             contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
           ),
+          validator: validator,
         ),
         const SizedBox(height: 16),
       ],

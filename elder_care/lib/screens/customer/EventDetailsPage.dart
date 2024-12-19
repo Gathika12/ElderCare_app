@@ -18,7 +18,7 @@ class EventDetailsPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Event Image
+                    // Event Image or Icon
                     if (event['image_url'] != null &&
                         event['image_url'].isNotEmpty)
                       ClipRRect(
@@ -28,6 +28,29 @@ class EventDetailsPage extends StatelessWidget {
                           height: 250,
                           width: double.infinity,
                           fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 250,
+                              width: double.infinity,
+                              color: Colors.grey[300],
+                              child: Icon(
+                                Icons.broken_image,
+                                size: 100,
+                                color: Colors.grey[600],
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    else
+                      Container(
+                        height: 250,
+                        width: double.infinity,
+                        color: Colors.grey[300],
+                        child: Icon(
+                          Icons.event,
+                          size: 100,
+                          color: Colors.grey[600],
                         ),
                       ),
                     SizedBox(height: 20),

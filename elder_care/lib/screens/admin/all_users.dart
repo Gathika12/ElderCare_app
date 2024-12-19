@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import 'SendNotificationPage.dart';
-
 class UsersTable extends StatefulWidget {
   @override
   _UsersTableState createState() => _UsersTableState();
@@ -104,20 +102,6 @@ class _UsersTableState extends State<UsersTable> {
       appBar: AppBar(
         title: Text('Users Table'),
         backgroundColor: Colors.teal,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {
-              // Navigate to the notification page
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SendNotificationPage(),
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -147,7 +131,7 @@ class _UsersTableState extends State<UsersTable> {
                             sortColumnIndex: sortColumnIndex,
                             sortAscending: sortAscending,
                             headingRowColor: MaterialStateColor.resolveWith(
-                              (states) => Colors.grey,
+                              (states) => Colors.teal,
                             ),
                             headingTextStyle: TextStyle(
                               fontWeight: FontWeight.bold,

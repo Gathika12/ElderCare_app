@@ -41,8 +41,8 @@ class _AddMetricsScreenState extends State<AddMetricsScreen> {
           SnackBar(content: Text('Metrics added successfully!')),
         );
 
-        // Navigate back and send the data
-        Navigator.pop(context, metricsData); // Pops back with data
+        // Navigate back and send a refresh signal
+        Navigator.pop(context, true); // Pass true as a signal to refresh data
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to add metrics.')),

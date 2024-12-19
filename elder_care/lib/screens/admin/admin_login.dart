@@ -1,5 +1,8 @@
+import 'package:elder_care/apiservice.dart';
 import 'package:elder_care/screens/admin/MenuDashboard.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AdminLogin extends StatefulWidget {
   @override
@@ -7,6 +10,8 @@ class AdminLogin extends StatefulWidget {
 }
 
 class _AdminLoginState extends State<AdminLogin> {
+  final RentApi apiService = RentApi();
+
   String _email = '';
   String _password = '';
   bool _isPasswordVisible = false;
@@ -16,16 +21,40 @@ class _AdminLoginState extends State<AdminLogin> {
 
   Future<void> _login(
       BuildContext context, String email, String password) async {
-    if (email == '1' && password == '1') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MenuDashboard(),
-        ),
+    try {
+      final Uri apiUrl = Uri.parse(
+          '${apiService.mainurl()}/admin_login.php'); // Update URL to match backend file
+
+      // Send credentials securely in the request body
+      final response = await http.post(
+        apiUrl,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'username': email,
+          'password': password,
+        }),
       );
-      return;
-    } else {
-      _showDialog(context, 'Login Failed', 'Invalid email or password.');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data['status'] == 'success') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MenuDashboard(),
+            ),
+          );
+        } else {
+          _showDialog(context, 'Login Failed',
+              data['message'] ?? 'Invalid username or password.');
+        }
+      } else {
+        _showDialog(context, 'Error',
+            'Failed to connect to the server. Please try again later.');
+      }
+    } catch (e) {
+      _showDialog(context, 'Error', 'An unexpected error occurred: $e');
     }
   }
 
@@ -56,6 +85,8 @@ class _AdminLoginState extends State<AdminLogin> {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              Text(message),
             ],
           ),
           actions: <Widget>[
@@ -188,10 +219,9 @@ class _AdminLoginState extends State<AdminLogin> {
                         child: const Text(
                           'Login',
                           style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
                         ),
                       ),
                     ),

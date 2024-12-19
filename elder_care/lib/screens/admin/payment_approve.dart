@@ -73,22 +73,29 @@ class _ApprovalPageState extends State<ApprovalPage> {
 
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
+        print('Response Body: $responseBody'); // Log the full response body
+
         if (responseBody['status'] == 'success') {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Payment approved successfully!')),
           );
           Navigator.pop(context, true);
         } else {
+          print(
+              'Error Message: ${responseBody['message']}'); // Log the error message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: ${responseBody['message']}')),
           );
         }
       } else {
+        print(
+            'Failed to approve payment. Status Code: ${response.statusCode}'); // Log status code
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to approve payment')),
         );
       }
     } catch (error) {
+      print('Exception: $error'); // Log the exception
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $error')),
       );
@@ -96,6 +103,7 @@ class _ApprovalPageState extends State<ApprovalPage> {
       setState(() {
         isApproving = false;
       });
+      print('isApproving set to false'); // Log when approval state is reset
     }
   }
 

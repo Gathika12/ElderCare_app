@@ -22,6 +22,12 @@ class _ViewMetricsScreenState extends State<ViewMetricsScreen> {
   double totalDiastolicBP = 0;
   String healthStatus = "Unknown";
 
+  @override
+  void initState() {
+    super.initState();
+    fetchMetrics();
+  }
+
   Future<void> fetchMetrics() async {
     final response = await http.get(
       Uri.parse(
@@ -30,7 +36,7 @@ class _ViewMetricsScreenState extends State<ViewMetricsScreen> {
 
     if (response.statusCode == 200) {
       setState(() {
-        _metrics = json.decode(response.body);
+        _metrics = json.decode(response.body); // Replace with fresh data
         _calculateTotals();
         _determineHealthStatus();
       });
@@ -40,26 +46,32 @@ class _ViewMetricsScreenState extends State<ViewMetricsScreen> {
   }
 
   void _calculateTotals() {
+    // Reset totals
     totalWeight = 0;
     totalSugar = 0;
     totalSystolicBP = 0;
     totalDiastolicBP = 0;
 
     for (var metric in _metrics) {
-      totalWeight += double.tryParse(metric['weight'] ?? '0') ?? 0;
-      totalSugar += double.tryParse(metric['sugar_level'] ?? '0') ?? 0;
+      totalWeight = double.tryParse(metric['weight'] ?? '0') ?? 0;
+      totalSugar = double.tryParse(metric['sugar_level'] ?? '0') ?? 0;
 
       String bp = metric['blood_pressure'] ?? '0/0';
       List<String> bpValues = bp.split('/');
       if (bpValues.length == 2) {
-        totalSystolicBP += double.tryParse(bpValues[0]) ?? 0;
-        totalDiastolicBP += double.tryParse(bpValues[1]) ?? 0;
+        totalSystolicBP = double.tryParse(bpValues[0]) ?? 0;
+        totalDiastolicBP = double.tryParse(bpValues[1]) ?? 0;
       }
     }
   }
 
   void _determineHealthStatus() {
     // Average metrics for status calculation
+    if (_metrics.isEmpty) {
+      healthStatus = "No Data";
+      return;
+    }
+
     double avgWeight = totalWeight / _metrics.length;
     double avgSugar = totalSugar / _metrics.length;
     double avgSystolicBP = totalSystolicBP / _metrics.length;
@@ -85,14 +97,7 @@ class _ViewMetricsScreenState extends State<ViewMetricsScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    fetchMetrics();
-  }
-
   void _navigateToAddMetricsScreen() async {
-    // Navigator.push waits for the screen to pop and return a value
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -101,14 +106,8 @@ class _ViewMetricsScreenState extends State<ViewMetricsScreen> {
     );
 
     if (result != null) {
-      // Ensure result is properly handled
       print('New Metrics Added: $result');
-
-      // If you're updating a list or state, do so here
-      setState(() {
-        // Assuming you have a list of metrics
-        _metrics.add(result);
-      });
+      fetchMetrics(); // Refresh the data after adding new metrics
     }
   }
 
@@ -119,13 +118,12 @@ class _ViewMetricsScreenState extends State<ViewMetricsScreen> {
         title: Text('Health Metrics (Pie Chart)'),
         actions: [
           TextButton(
-            onPressed:
-                _navigateToAddMetricsScreen, // Pass the function reference
+            onPressed: _navigateToAddMetricsScreen,
             child: Text(
               'Add Details',
               style: TextStyle(
-                color: Colors.teal, // Text color
-                fontSize: 16, // Text size
+                color: Colors.teal,
+                fontSize: 16,
               ),
             ),
           ),

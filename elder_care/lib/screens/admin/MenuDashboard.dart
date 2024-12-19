@@ -1,4 +1,5 @@
 import 'package:elder_care/screens/admin/AlertDialog.dart';
+import 'package:elder_care/screens/admin/admin_login.dart';
 import 'package:flutter/material.dart';
 import 'package:elder_care/screens/admin/ServiceProviderControlPage.dart';
 import 'package:elder_care/screens/admin/ViewAdditionalService.dart';
@@ -154,9 +155,7 @@ class MenuDashboard extends StatelessWidget {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-          builder: (context) => LoginPage(
-                role: '',
-              )), // Replace with your login page
+          builder: (context) => AdminLogin()), // Replace with your login page
       (Route<dynamic> route) => false, // Remove all routes
     );
   }
